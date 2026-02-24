@@ -1,0 +1,478 @@
+import React, { useState, useRef } from 'react';
+import { motion, AnimatePresence } from 'motion/react';
+import { X, Check, CreditCard, Upload, Smartphone, ArrowRight, ArrowLeft, MessageCircle, FileText } from 'lucide-react';
+import { useForm } from 'react-hook-form';
+import { EVENTS, Registration } from '../types';
+import confetti from 'canvas-confetti';
+import { InvitationCard } from './InvitationCard';
+import { QRCodeSVG } from 'qrcode.react';
+
+interface RegistrationModalProps {
+  isOpen: boolean;
+  onClose: () => void;
+  initialEvent?: string;
+}
+
+const STEPS = [
+  { id: 'details', title: 'Personal Details' },
+  { id: 'events', title: 'Event Selection' },
+  { id: 'payment', title: 'Payment' },
+  { id: 'upload', title: 'Verification' }
+];
+
+const REGISTRATION_FEE = 200;
+const UPI_ID = "manor6272-1@oksbi";
+
+export const RegistrationModal: React.FC<RegistrationModalProps> = ({ isOpen, onClose, initialEvent }) => {
+  const { register, handleSubmit, watch, setValue, trigger, formState: { errors } } = useForm({
+    defaultValues: {
+      name: '',
+      college: '',
+      department: '',
+      year: '1',
+      gender: 'Male',
+      phone: '',
+      email: '',
+      events: initialEvent ? [initialEvent] : [] as string[],
+      paymentScreenshot: ''
+    }
+  });
+
+  React.useEffect(() => {
+    if (initialEvent) {
+      setValue('events', [initialEvent]);
+    }
+  }, [initialEvent, setValue]);
+
+  const [currentStep, setCurrentStep] = useState(0);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [isSuccess, setIsSuccess] = useState(false);
+  const [screenshotPreview, setScreenshotPreview] = useState<string | null>(null);
+  const [registeredData, setRegisteredData] = useState<Registration | null>(null);
+  const [showInvitation, setShowInvitation] = useState(false);
+
+  const WHATSAPP_GROUP_LINK = "https://chat.whatsapp.com/CCY2fmTVixxELmvQtiDGSq";
+
+  const selectedEvents = watch('events');
+
+  const nextStep = async () => {
+    let fieldsToValidate: any[] = [];
+    if (currentStep === 0) {
+      fieldsToValidate = ['name', 'college', 'department', 'year', 'gender', 'phone', 'email'];
+    } else if (currentStep === 1) {
+      fieldsToValidate = ['events'];
+      if (selectedEvents.length < 3) {
+        alert('Please select at least 3 events');
+        return;
+      }
+    } else if (currentStep === 2) {
+      setCurrentStep(currentStep + 1);
+      return;
+    }
+
+    const isValid = await trigger(fieldsToValidate);
+    if (isValid) {
+      setCurrentStep(currentStep + 1);
+    }
+  };
+
+  const prevStep = () => setCurrentStep(currentStep - 1);
+
+  const handleFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        const base64String = reader.result as string;
+        setScreenshotPreview(base64String);
+        setValue('paymentScreenshot', base64String);
+      };
+      reader.readAsDataURL(file);
+    }
+  };
+
+  const handleUPIPayment = (app: string) => {
+    const upiUrl = `upi://pay?pa=${UPI_ID}&pn=SPIRIT2K26&am=${REGISTRATION_FEE}&cu=INR`;
+    window.open(upiUrl, '_blank');
+  };
+
+  const onSubmit = async (data: any) => {
+    setIsSubmitting(true);
+    try {
+      const response = await fetch('/api/register', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(data),
+      });
+
+      if (response.ok) {
+        const result = await response.json();
+        setRegisteredData(result.registration);
+        setIsSuccess(true);
+        confetti({
+          particleCount: 150,
+          spread: 70,
+          origin: { y: 0.6 },
+          colors: ['#00f2ff', '#bc13fe', '#00ffff']
+        });
+      } else {
+        const err = await response.json();
+        alert(`Registration failed: ${err.error}${err.details ? '\nDetails: ' + err.details : ''}`);
+      }
+
+    } catch (error) {
+      console.error(error);
+      alert('An error occurred');
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
+  return (
+    <AnimatePresence>
+      {isOpen && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/90 backdrop-blur-md">
+          <motion.div
+            initial={{ scale: 0.9, opacity: 0 }}
+            animate={{ scale: 1, opacity: 1 }}
+            exit={{ scale: 0.9, opacity: 0 }}
+            className="glass w-full max-w-4xl rounded-[2rem] overflow-hidden relative flex flex-col max-h-[90vh]"
+          >
+            <button
+              onClick={onClose}
+              className="absolute top-6 right-6 p-2 hover:bg-white/10 rounded-full transition-colors z-10"
+            >
+              <X size={24} />
+            </button>
+
+            {isSuccess ? (
+              <div className="p-12 text-center flex-1 flex flex-col items-center justify-center">
+                <motion.div
+                  initial={{ scale: 0 }}
+                  animate={{ scale: 1 }}
+                  className="w-24 h-24 bg-neon-blue rounded-full flex items-center justify-center mb-8 shadow-[0_0_30px_rgba(0,242,255,0.4)]"
+                >
+                  <Check size={48} className="text-black" />
+                </motion.div>
+                <h2 className="text-4xl font-bold mb-4">Registration Successful!</h2>
+                <p className="text-white/60 text-xl mb-12">Welcome to SPIRIT 2k26!</p>
+
+                <div className="flex flex-col sm:flex-row gap-4 w-full max-w-md">
+                  <a
+                    href={WHATSAPP_GROUP_LINK}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="flex-1 flex items-center justify-center space-x-2 py-4 bg-emerald-500 text-white rounded-2xl hover:bg-emerald-600 transition-all font-bold"
+                  >
+                    <MessageCircle size={20} />
+                    <span>Join WhatsApp Group</span>
+                  </a>
+                  <button
+                    onClick={() => setShowInvitation(true)}
+                    className="flex-1 flex items-center justify-center space-x-2 py-4 bg-neon-blue text-black rounded-2xl hover:shadow-[0_0_20px_rgba(0,242,255,0.4)] transition-all font-bold"
+                  >
+                    <FileText size={20} />
+                    <span>Get Your Invitation</span>
+                  </button>
+                </div>
+
+                <button
+                  onClick={onClose}
+                  className="mt-8 text-white/40 hover:text-white transition-colors text-sm uppercase tracking-widest"
+                >
+                  Close Window
+                </button>
+              </div>
+            ) : (
+              <>
+                {/* Progress Header */}
+                <div className="p-8 border-b border-white/10 bg-white/5">
+                  <div className="flex justify-between items-center max-w-2xl mx-auto">
+                    {STEPS.map((step, idx) => (
+                      <div key={step.id} className="flex flex-col items-center relative flex-1">
+                        <div className={`w-10 h-10 rounded-full flex items-center justify-center text-sm font-bold transition-all duration-500 ${idx <= currentStep ? 'bg-neon-blue text-black shadow-[0_0_15px_rgba(0,242,255,0.4)]' : 'bg-white/10 text-white/40'
+                          }`}>
+                          {idx < currentStep ? <Check size={20} /> : idx + 1}
+                        </div>
+                        <span className={`text-[10px] uppercase tracking-widest mt-2 font-medium ${idx <= currentStep ? 'text-neon-blue' : 'text-white/20'
+                          }`}>
+                          {step.title}
+                        </span>
+                        {idx < STEPS.length - 1 && (
+                          <div className={`absolute top-5 left-[calc(50%+20px)] right-[calc(-50%+20px)] h-px transition-all duration-500 ${idx < currentStep ? 'bg-neon-blue' : 'bg-white/10'
+                            }`} />
+                        )}
+                      </div>
+                    ))}
+                  </div>
+                </div>
+
+                <div className="flex-1 overflow-y-auto p-8 custom-scrollbar">
+                  <form onSubmit={handleSubmit(onSubmit)} className="max-w-2xl mx-auto">
+                    {currentStep === 0 && (
+                      <motion.div
+                        initial={{ opacity: 0, x: 20 }}
+                        animate={{ opacity: 1, x: 0 }}
+                        className="space-y-6"
+                      >
+                        <h3 className="text-2xl font-bold mb-6">Personal Details</h3>
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                          <div className="space-y-2">
+                            <label className="text-sm text-white/60">Full Name</label>
+                            <input {...register('name', { required: true })} className="w-full glass-input" placeholder="John Doe" />
+                          </div>
+                          <div className="space-y-2">
+                            <label className="text-sm text-white/60">College Name</label>
+                            <input {...register('college', { required: true })} className="w-full glass-input" placeholder="XYZ College" />
+                          </div>
+                          <div className="space-y-2">
+                            <label className="text-sm text-white/60">Department</label>
+                            <input {...register('department', { required: true })} className="w-full glass-input" placeholder="Information Technology" />
+                          </div>
+                          <div className="space-y-2">
+                            <label className="text-sm text-white/60">Year of Study</label>
+                            <input
+                              {...register('year', { required: true })}
+                              className="w-full glass-input"
+                              placeholder="e.g. 1st Year or 2026"
+                            />
+                          </div>
+                          <div className="space-y-2">
+                            <label className="text-sm text-white/60">Gender</label>
+                            <select {...register('gender', { required: true })} className="w-full glass-input">
+                              <option value="Male">Male</option>
+                              <option value="Female">Female</option>
+                              <option value="Other">Other</option>
+                            </select>
+                          </div>
+                          <div className="space-y-2">
+                            <label className="text-sm text-white/60">Phone Number</label>
+                            <input {...register('phone', { required: true, pattern: /^[0-9]{10}$/ })} className="w-full glass-input" placeholder="9876543210" />
+                          </div>
+                          <div className="space-y-2 md:col-span-2">
+                            <label className="text-sm text-white/60">Email ID</label>
+                            <input {...register('email', { required: true, pattern: /^\S+@\S+$/i })} className="w-full glass-input" placeholder="john@example.com" />
+                          </div>
+                        </div>
+                      </motion.div>
+                    )}
+
+                    {currentStep === 1 && (
+                      <motion.div
+                        initial={{ opacity: 0, x: 20 }}
+                        animate={{ opacity: 1, x: 0 }}
+                        className="space-y-6"
+                      >
+                        <div className="flex justify-between items-end mb-6">
+                          <h3 className="text-2xl font-bold">Select Events</h3>
+                          <span className={`text-sm font-mono ${selectedEvents.length >= 3 && selectedEvents.length <= 4 ? 'text-neon-blue' : 'text-red-400'}`}>
+                            {selectedEvents.length} / 4 Selected
+                          </span>
+                        </div>
+                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                          {EVENTS.map((event) => {
+                            const isSelected = selectedEvents.includes(event.name);
+                            const isDisabled = !isSelected && selectedEvents.length >= 4;
+                            return (
+                              <label key={event.id} className={`flex items-center p-4 rounded-xl border transition-all cursor-pointer ${isSelected ? 'bg-neon-blue/10 border-neon-blue' : 'bg-white/5 border-white/10 hover:bg-white/10'
+                                } ${isDisabled ? 'opacity-40 cursor-not-allowed' : ''}`}>
+                                <input
+                                  type="checkbox"
+                                  value={event.name}
+                                  disabled={isDisabled}
+                                  {...register('events', { validate: v => v.length >= 3 && v.length <= 4 })}
+                                  className="hidden"
+                                />
+                                <div className={`w-5 h-5 rounded border flex items-center justify-center mr-3 transition-colors ${isSelected ? 'bg-neon-blue border-neon-blue' : 'border-white/20'
+                                  }`}>
+                                  {isSelected && <Check size={14} className="text-black" />}
+                                </div>
+                                <div className="flex-1">
+                                  <div className="text-sm font-bold">{event.name}</div>
+                                  <div className="text-[10px] text-white/40 uppercase tracking-tighter">{event.category}</div>
+                                </div>
+                              </label>
+                            );
+                          })}
+                        </div>
+                        {selectedEvents.length < 3 && (
+                          <p className="text-red-400 text-xs mt-4">Minimum 3 events mandatory for registration.</p>
+                        )}
+                      </motion.div>
+                    )}
+
+                    {currentStep === 2 && (
+                      <motion.div
+                        initial={{ opacity: 0, x: 20 }}
+                        animate={{ opacity: 1, x: 0 }}
+                        className="space-y-8 text-center"
+                      >
+                        <h3 className="text-2xl font-bold">Payment Integration</h3>
+                        <div className="glass p-8 rounded-3xl inline-block mx-auto border-neon-blue/20">
+                          <div className="text-4xl font-bold text-white mb-2">₹200</div>
+                          <div className="text-white/40 text-sm mb-6">Registration Fee</div>
+
+                          <div className="bg-white p-4 rounded-2xl mb-6 inline-block">
+                            <QRCodeSVG
+                              value={`upi://pay?pa=${UPI_ID}&pn=SPIRIT2K26&am=${REGISTRATION_FEE}&cu=INR`}
+                              size={160}
+                              level="H"
+                              includeMargin={true}
+                            />
+                          </div>
+
+                          <div className="text-neon-blue font-mono text-sm mb-8">{UPI_ID}</div>
+
+                          <div className="grid grid-cols-2 gap-3">
+                            {['Google Pay', 'PhonePe', 'Paytm', 'Other UPI'].map(app => (
+                              <button
+                                key={app}
+                                type="button"
+                                onClick={() => handleUPIPayment(app)}
+                                className="flex items-center justify-center space-x-2 p-3 bg-white/5 border border-white/10 rounded-xl hover:bg-white/10 transition-all text-xs font-medium"
+                              >
+                                <Smartphone size={14} />
+                                <span>{app}</span>
+                              </button>
+                            ))}
+                          </div>
+                        </div>
+                        <p className="text-white/40 text-sm max-w-md mx-auto">
+                          Scan the QR or click on any UPI app to pay. After successful payment, take a screenshot and proceed to the next step.
+                        </p>
+                      </motion.div>
+                    )}
+
+                    {currentStep === 3 && (
+                      <motion.div
+                        initial={{ opacity: 0, x: 20 }}
+                        animate={{ opacity: 1, x: 0 }}
+                        className="space-y-8 text-center"
+                      >
+                        <h3 className="text-2xl font-bold">Verification</h3>
+                        <div className="max-w-md mx-auto">
+                          <label className={`relative block aspect-video rounded-3xl border-2 border-dashed transition-all cursor-pointer overflow-hidden ${screenshotPreview ? 'border-neon-blue' : 'border-white/20 hover:border-neon-blue/50'
+                            }`}>
+                            <input
+                              type="file"
+                              accept="image/*"
+                              onChange={handleFileUpload}
+                              className="hidden"
+                            />
+                            {screenshotPreview ? (
+                              <img src={screenshotPreview} className="w-full h-full object-cover" alt="Payment Screenshot" />
+                            ) : (
+                              <div className="absolute inset-0 flex flex-col items-center justify-center space-y-4">
+                                <div className="p-4 bg-white/5 rounded-full text-neon-blue">
+                                  <Upload size={32} />
+                                </div>
+                                <div>
+                                  <div className="font-bold">Upload Payment Screenshot</div>
+                                  <div className="text-xs text-white/40">PNG, JPG or JPEG allowed</div>
+                                </div>
+                              </div>
+                            )}
+                          </label>
+                          {screenshotPreview && (
+                            <button
+                              type="button"
+                              onClick={() => setScreenshotPreview(null)}
+                              className="mt-4 text-xs text-red-400 hover:underline"
+                            >
+                              Remove and re-upload
+                            </button>
+                          )}
+                        </div>
+                      </motion.div>
+                    )}
+
+                    <div className="mt-12 flex justify-between items-center">
+                      {currentStep > 0 ? (
+                        <button
+                          type="button"
+                          onClick={prevStep}
+                          className="flex items-center space-x-2 px-6 py-3 text-white/60 hover:text-white transition-colors"
+                        >
+                          <ArrowLeft size={18} />
+                          <span>Back</span>
+                        </button>
+                      ) : <div />}
+
+                      {currentStep < STEPS.length - 1 ? (
+                        <button
+                          type="button"
+                          onClick={nextStep}
+                          className="btn-primary flex items-center space-x-2"
+                        >
+                          <span>Next Step</span>
+                          <ArrowRight size={18} />
+                        </button>
+                      ) : (
+                        <button
+                          type="submit"
+                          disabled={isSubmitting || !watch('paymentScreenshot')}
+                          className="btn-primary disabled:opacity-50 disabled:cursor-not-allowed flex items-center space-x-2"
+                        >
+                          {isSubmitting ? (
+                            <>
+                              <div className="w-4 h-4 border-2 border-black/20 border-t-black rounded-full animate-spin" />
+                              <span>Processing...</span>
+                            </>
+                          ) : (
+                            <>
+                              <span>Submit Registration</span>
+                              <Check size={18} />
+                            </>
+                          )}
+                        </button>
+                      )}
+                    </div>
+                  </form>
+                </div>
+              </>
+            )}
+          </motion.div>
+        </div>
+      )}
+
+      <AnimatePresence>
+        {showInvitation && registeredData && (
+          <InvitationCard
+            registration={registeredData}
+            onClose={() => setShowInvitation(false)}
+          />
+        )}
+      </AnimatePresence>
+
+      <style>{`
+         .glass-input {
+           background: rgba(255, 255, 255, 0.05) !important;
+           border: 1px solid rgba(255, 255, 255, 0.1) !important;
+           border-radius: 0.75rem !important;
+           padding: 0.75rem 1rem !important;
+           outline: none !important;
+           transition: all 0.2s !important;
+           color: white !important;
+           width: 100% !important;
+         }
+         .glass-input:focus {
+           border-color: #00f2ff !important;
+           background: rgba(255, 255, 255, 0.1) !important;
+         }
+         .glass-input::placeholder {
+           color: rgba(255, 255, 255, 0.3) !important;
+         }
+        .custom-scrollbar::-webkit-scrollbar {
+          width: 4px;
+        }
+        .custom-scrollbar::-webkit-scrollbar-track {
+          background: transparent;
+        }
+        .custom-scrollbar::-webkit-scrollbar-thumb {
+          background: rgba(255, 255, 255, 0.1);
+          border-radius: 10px;
+        }
+      `}</style>
+    </AnimatePresence>
+  );
+};
