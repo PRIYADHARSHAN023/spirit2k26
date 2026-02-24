@@ -444,35 +444,7 @@ export const RegistrationModal: React.FC<RegistrationModalProps> = ({ isOpen, on
         )}
       </AnimatePresence>
 
-      <style>{`
-         .glass-input {
-           background: rgba(255, 255, 255, 0.05) !important;
-           border: 1px solid rgba(255, 255, 255, 0.1) !important;
-           border-radius: 0.75rem !important;
-           padding: 0.75rem 1rem !important;
-           outline: none !important;
-           transition: all 0.2s !important;
-           color: white !important;
-           width: 100% !important;
-         }
-         .glass-input:focus {
-           border-color: #00f2ff !important;
-           background: rgba(255, 255, 255, 0.1) !important;
-         }
-         .glass-input::placeholder {
-           color: rgba(255, 255, 255, 0.3) !important;
-         }
-        .custom-scrollbar::-webkit-scrollbar {
-          width: 4px;
-        }
-        .custom-scrollbar::-webkit-scrollbar-track {
-          background: transparent;
-        }
-        .custom-scrollbar::-webkit-scrollbar-thumb {
-          background: rgba(255, 255, 255, 0.1);
-          border-radius: 10px;
-        }
-      `}</style>
+
     </AnimatePresence>
   );
 };

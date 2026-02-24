@@ -44,6 +44,26 @@
   .btn-primary {
     @apply relative px-8 py-3 bg-neon-blue text-black font-bold rounded-full overflow-hidden transition-all duration-300 hover:scale-105 hover:shadow-[0_0_25px_rgba(0,242,255,0.6)] active:scale-95;
   }
+
+  .glass-input {
+    @apply w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white focus:outline-none focus:border-neon-blue/50 transition-all;
+    font-size: 16px !important; /* Prevents auto-zoom on iOS */
+  }
+
+  .glass-input::placeholder {
+    @apply text-white/30;
+  }
+}
+
+/* Mobile Optimizations */
+@media (max-width: 640px) {
+  .btn-primary {
+    @apply px-6 py-2.5 text-sm;
+  }
+  
+  h1 {
+    @apply text-5xl !important;
+  }
 }
 
 /* Custom scrollbar */
