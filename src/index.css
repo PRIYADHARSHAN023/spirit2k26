@@ -4,18 +4,25 @@
 @theme {
   --font-sans: "Space Grotesk", ui-sans-serif, system-ui, sans-serif;
   --font-mono: "JetBrains Mono", ui-monospace, SFMono-Regular, monospace;
-  
+
   --color-neon-blue: #00f2ff;
   --color-neon-purple: #bc13fe;
   --color-neon-cyan: #00ffff;
-  
+
   --animate-pulse-slow: pulse 4s cubic-bezier(0.4, 0, 0.6, 1) infinite;
   --animate-float: float 6s ease-in-out infinite;
 }
 
 @keyframes float {
-  0%, 100% { transform: translateY(0); }
-  50% { transform: translateY(-20px); }
+
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+
+  50% {
+    transform: translateY(-20px);
+  }
 }
 
 @layer base {
@@ -28,26 +35,27 @@
   .glass {
     @apply bg-white/5 backdrop-blur-lg border border-white/10;
   }
-  
+
   .neon-border {
-    @apply border border-neon-blue/30 shadow-[0_0_15px_rgba(0,242,255,0.2)];
+    @apply border border-neon-blue/30 shadow-[0_0_15px_rgba(0, 242, 255, 0.2)];
   }
-  
+
   .neon-text-blue {
-    @apply text-neon-blue drop-shadow-[0_0_8px_rgba(0,242,255,0.8)];
+    @apply text-neon-blue drop-shadow-[0_0_8px_rgba(0, 242, 255, 0.8)];
   }
-  
+
   .neon-text-purple {
-    @apply text-neon-purple drop-shadow-[0_0_8px_rgba(188,19,254,0.8)];
+    @apply text-neon-purple drop-shadow-[0_0_8px_rgba(188, 19, 254, 0.8)];
   }
 
   .btn-primary {
-    @apply relative px-8 py-3 bg-neon-blue text-black font-bold rounded-full overflow-hidden transition-all duration-300 hover:scale-105 hover:shadow-[0_0_25px_rgba(0,242,255,0.6)] active:scale-95;
+    @apply relative px-8 py-3 bg-neon-blue text-black font-bold rounded-full overflow-hidden transition-all duration-300 hover:scale-105 hover:shadow-[0_0_25px_rgba(0, 242, 255, 0.6)] active:scale-95;
   }
 
   .glass-input {
     @apply w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white focus:outline-none focus:border-neon-blue/50 transition-all;
-    font-size: 16px !important; /* Prevents auto-zoom on iOS */
+    font-size: 16px !important;
+    /* Prevents auto-zoom on iOS */
   }
 
   .glass-input::placeholder {
@@ -60,9 +68,9 @@
   .btn-primary {
     @apply px-6 py-2.5 text-sm;
   }
-  
+
   h1 {
-    @apply text-5xl !important;
+    @apply text-5xl;
   }
 }
 
@@ -78,4 +86,3 @@
 ::-webkit-scrollbar-thumb {
   @apply bg-neon-blue/30 rounded-full hover:bg-neon-blue/50;
 }
-
