@@ -7,11 +7,23 @@ dotenv.config();
 // MongoDB Connection
 const MONGODB_URI = process.env.MONGODB_URI || "mongodb+srv://infotech:infotech%402026@cluster0.qnamgvq.mongodb.net/?appName=Cluster0";
 
-if (mongoose.connection.readyState === 0) {
-    mongoose.connect(MONGODB_URI)
-        .then(() => console.log("Connected to MongoDB Atlas (Vercel)"))
-        .catch((err) => console.error("MongoDB connection error:", err));
+// MongoDB Connection Utility
+let cachedConnection: typeof mongoose | null = null;
+
+async function connectToDatabase() {
+    if (cachedConnection) return cachedConnection;
+
+    // Mongoose connection buffer behavior can cause timeouts in serverless
+    // We disable it to fail fast if not connected, and we await the connection
+    mongoose.set('bufferCommands', false);
+
+    cachedConnection = await mongoose.connect(MONGODB_URI, {
+        bufferCommands: false,
+    });
+    console.log("Connected to MongoDB Atlas (Vercel)");
+    return cachedConnection;
 }
+
 
 const registrationSchema = new mongoose.Schema({
     registrationId: { type: String, unique: true },
@@ -50,6 +62,7 @@ const app = express();
 app.use(express.json({ limit: '10mb' }));
 
 app.post("/api/register", async (req: Request, res: Response) => {
+    await connectToDatabase();
     const { name, college, department, year, gender, phone, email, events, paymentScreenshot } = req.body;
     try {
         const existing = await Registration.findOne({ email });
@@ -75,6 +88,7 @@ app.post("/api/register", async (req: Request, res: Response) => {
 });
 
 app.post("/api/admin/register", async (req: Request, res: Response) => {
+    await connectToDatabase();
     const { username, email, password } = req.body;
     try {
         const existing = await Admin.findOne({ username });
@@ -88,6 +102,7 @@ app.post("/api/admin/register", async (req: Request, res: Response) => {
 });
 
 app.post("/api/admin/login", async (req: Request, res: Response) => {
+    await connectToDatabase();
     const { username, password } = req.body;
     try {
         const admin = await Admin.findOne({ username, password });
@@ -107,6 +122,7 @@ app.post("/api/admin/login", async (req: Request, res: Response) => {
 });
 
 app.get("/api/admin/registrations", async (req: Request, res: Response) => {
+    await connectToDatabase();
     try {
         const registrations = await Registration.find().sort({ createdAt: -1 });
         res.json(registrations);
@@ -116,6 +132,7 @@ app.get("/api/admin/registrations", async (req: Request, res: Response) => {
 });
 
 app.delete("/api/admin/registrations/:id", async (req: Request, res: Response) => {
+    await connectToDatabase();
     const { id } = req.params;
     try {
         await Registration.findByIdAndDelete(id);
