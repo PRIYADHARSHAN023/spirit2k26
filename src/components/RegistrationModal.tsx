@@ -50,8 +50,9 @@ export const RegistrationModal: React.FC<RegistrationModalProps> = ({ isOpen, on
   const [screenshotPreview, setScreenshotPreview] = useState<string | null>(null);
   const [registeredData, setRegisteredData] = useState<Registration | null>(null);
   const [showInvitation, setShowInvitation] = useState(false);
-  const [isCompressing, setIsCompressing] = useState(false);
+  const [hasVisitedGoogleForm, setHasVisitedGoogleForm] = useState(false);
 
+  const GOOGLE_FORM_LINK = "https://forms.gle/GAVCvgYcmMJ3BvSq5";
   const WHATSAPP_GROUP_LINK = "https://chat.whatsapp.com/CCY2fmTVixxELmvQtiDGSq";
 
   const selectedEvents = watch('events');
@@ -78,72 +79,6 @@ export const RegistrationModal: React.FC<RegistrationModalProps> = ({ isOpen, on
   };
 
   const prevStep = () => setCurrentStep(currentStep - 1);
-
-  const compressImage = (file: File): Promise<string> => {
-    return new Promise((resolve) => {
-      const reader = new FileReader();
-      reader.readAsDataURL(file);
-      reader.onload = (event) => {
-        const img = new Image();
-        img.src = event.target?.result as string;
-        img.onload = () => {
-          const canvas = document.createElement('canvas');
-          const MAX_WIDTH = 1200;
-          const MAX_HEIGHT = 1200;
-          let width = img.width;
-          let height = img.height;
-
-          if (width > height) {
-            if (width > MAX_WIDTH) {
-              height *= MAX_WIDTH / width;
-              width = MAX_WIDTH;
-            }
-          } else {
-            if (height > MAX_HEIGHT) {
-              width *= MAX_HEIGHT / height;
-              height = MAX_HEIGHT;
-            }
-          }
-
-          canvas.width = width;
-          canvas.height = height;
-          const ctx = canvas.getContext('2d');
-          ctx?.drawImage(img, 0, 0, width, height);
-
-          // Quality 0.7 to 0.8 is usually perfect for readability and small size
-          const dataUrl = canvas.toDataURL('image/jpeg', 0.7);
-          resolve(dataUrl);
-        };
-      };
-    });
-  };
-
-  const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (file) {
-      // 1. Instant Preview (Original Image)
-      const previewReader = new FileReader();
-      previewReader.onloadend = () => {
-        setScreenshotPreview(previewReader.result as string);
-      };
-      previewReader.readAsDataURL(file);
-
-      // 2. Background Compression
-      setIsCompressing(true);
-      try {
-        const compressedBase64 = await compressImage(file);
-        // 3. Update with compressed version
-        setScreenshotPreview(compressedBase64);
-        setValue('paymentScreenshot', compressedBase64);
-      } catch (error) {
-        console.error("Compression error:", error);
-        // If compression fails, we fallback to original (but it's risky for size)
-        // For now, just alert or continue with original
-      } finally {
-        setIsCompressing(false);
-      }
-    }
-  };
 
   const handleUPIPayment = (app: string) => {
     const upiUrl = `upi://pay?pa=${UPI_ID}&pn=SPIRIT2K26&am=${REGISTRATION_FEE}&cu=INR`;
@@ -401,41 +336,37 @@ export const RegistrationModal: React.FC<RegistrationModalProps> = ({ isOpen, on
                       <motion.div
                         initial={{ opacity: 0, x: 20 }}
                         animate={{ opacity: 1, x: 0 }}
-                        className="space-y-8 text-center"
+                        className="space-y-6 text-center"
                       >
-                        <h3 className="text-2xl font-bold">Verification</h3>
-                        <div className="max-w-md mx-auto">
-                          <label className={`relative block aspect-video rounded-3xl border-2 border-dashed transition-all cursor-pointer overflow-hidden ${screenshotPreview ? 'border-neon-blue' : 'border-white/20 hover:border-neon-blue/50'
-                            }`}>
-                            <input
-                              type="file"
-                              accept="image/*"
-                              onChange={handleFileUpload}
-                              className="hidden"
-                            />
-                            {screenshotPreview ? (
-                              <img src={screenshotPreview} className="w-full h-full object-cover" alt="Payment Screenshot" />
-                            ) : (
-                              <div className="absolute inset-0 flex flex-col items-center justify-center space-y-4">
-                                <div className="p-4 bg-white/5 rounded-full text-neon-blue">
-                                  <Upload size={32} />
-                                </div>
-                                <div>
-                                  <div className="font-bold">Upload Payment Screenshot</div>
-                                  <div className="text-xs text-white/40">PNG, JPG or JPEG allowed</div>
-                                </div>
-                              </div>
-                            )}
-                          </label>
-                          {screenshotPreview && (
-                            <button
-                              type="button"
-                              onClick={() => setScreenshotPreview(null)}
-                              className="mt-4 text-xs text-red-400 hover:underline"
-                            >
-                              Remove and re-upload
-                            </button>
-                          )}
+                        <div className="w-20 h-20 bg-neon-blue/20 rounded-full flex items-center justify-center mx-auto mb-6">
+                          <Upload className="text-neon-blue" size={32} />
+                        </div>
+                        <h3 className="text-2xl font-bold">Submit Your Payment</h3>
+
+                        <div className="max-w-md mx-auto space-y-4">
+                          <p className="text-white/60 text-sm">
+                            Please upload your payment screenshot to our official verification form.
+                            This is required to confirm your registration.
+                          </p>
+
+                          <a
+                            href={GOOGLE_FORM_LINK}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            onClick={() => setHasVisitedGoogleForm(true)}
+                            className="flex items-center justify-center space-x-3 w-full py-4 bg-white/5 border border-white/20 rounded-2xl hover:bg-white/10 hover:border-neon-blue transition-all group"
+                          >
+                            <FileText className="text-neon-blue group-hover:scale-110 transition-transform" size={20} />
+                            <span className="font-bold">Open Payment Form</span>
+                            <ArrowRight size={16} className="text-white/40" />
+                          </a>
+
+                          <div className="p-4 bg-neon-blue/5 border border-neon-blue/20 rounded-2xl">
+                            <p className="text-[10px] text-neon-blue uppercase tracking-widest font-bold">Important</p>
+                            <p className="text-xs text-white/40 mt-1">
+                              After submitting the Google Form, come back here and click "Complete Registration" to get your invitation card.
+                            </p>
+                          </div>
                         </div>
                       </motion.div>
                     )}
@@ -464,7 +395,7 @@ export const RegistrationModal: React.FC<RegistrationModalProps> = ({ isOpen, on
                       ) : (
                         <button
                           type="submit"
-                          disabled={isSubmitting || isCompressing || !watch('paymentScreenshot')}
+                          disabled={isSubmitting || !hasVisitedGoogleForm}
                           className="btn-primary disabled:opacity-50 disabled:cursor-not-allowed flex items-center space-x-2"
                         >
                           {isSubmitting ? (
@@ -472,14 +403,9 @@ export const RegistrationModal: React.FC<RegistrationModalProps> = ({ isOpen, on
                               <div className="w-4 h-4 border-2 border-black/20 border-t-black rounded-full animate-spin" />
                               <span>Processing...</span>
                             </>
-                          ) : isCompressing ? (
-                            <>
-                              <div className="w-4 h-4 border-2 border-black/20 border-t-black rounded-full animate-spin" />
-                              <span>Optimizing Image...</span>
-                            </>
                           ) : (
                             <>
-                              <span>Submit Registration</span>
+                              <span>Complete Registration</span>
                               <Check size={18} />
                             </>
                           )}
