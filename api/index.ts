@@ -82,7 +82,7 @@ app.post("/api/register", async (req: Request, res: Response) => {
             { $inc: { seq: 1 } },
             { new: true, upsert: true }
         );
-        const registrationId = `SP26-${String(counter.seq).padStart(4, '0')}`;
+        const registrationId = `SPIRIT${String(counter.seq).padStart(3, '0')}`;
 
         const registration = new Registration({
             registrationId, name, college, department, year, gender, phone, email, events, paymentScreenshot,

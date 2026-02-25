@@ -135,17 +135,12 @@ export const InvitationCard: React.FC<InvitationCardProps> = ({ registration, on
               </div>
               <div className="text-[9px] text-white/40 uppercase tracking-wider">Main Auditorium, JJCET</div>
             </div>
-            <div className="bg-white p-1.5 rounded-lg min-w-[60px] min-h-[60px] flex items-center justify-center">
-              {registration.registrationId ? (
-                <QRCodeSVG
-                  value={registration.registrationId || registration.email}
-                  size={48}
-                  level="H"
-                  includeMargin={false}
-                />
-              ) : (
-                <div className="w-12 h-12 bg-black/5 rounded animate-pulse" />
-              )}
+            <div className="bg-white p-1 rounded-lg w-16 h-16 flex items-center justify-center overflow-hidden">
+              <img
+                src="/assets/college-qr.jpg"
+                alt="College Address"
+                className="w-full h-full object-contain"
+              />
             </div>
           </div>
 
