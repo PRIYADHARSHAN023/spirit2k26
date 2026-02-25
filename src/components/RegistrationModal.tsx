@@ -45,6 +45,13 @@ export const RegistrationModal: React.FC<RegistrationModalProps> = ({ isOpen, on
   }, [initialEvent, setValue]);
 
   const [currentStep, setCurrentStep] = useState(0);
+
+  // Server Warming: Ping the health endpoint when user is on payment/upload step
+  React.useEffect(() => {
+    if (currentStep >= 2) {
+      fetch('/api/health').catch(() => { });
+    }
+  }, [currentStep]);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isSuccess, setIsSuccess] = useState(false);
   const [screenshotPreview, setScreenshotPreview] = useState<string | null>(null);
@@ -86,7 +93,26 @@ export const RegistrationModal: React.FC<RegistrationModalProps> = ({ isOpen, on
   };
 
   const onSubmit = async (data: any) => {
-    setIsSubmitting(true);
+    // Optimistic Success: Immediately show the invitation card with local data
+    const optimisticData: Registration = {
+      ...data,
+      registrationId: '', // Will be filled once server responds
+      paymentStatus: 'Processing',
+      createdAt: new Date().toISOString()
+    };
+
+    setRegisteredData(optimisticData);
+    setIsSuccess(true);
+    setShowInvitation(true);
+
+    // Play confetti immediately for instant feedback
+    confetti({
+      particleCount: 150,
+      spread: 70,
+      origin: { y: 0.6 },
+      colors: ['#00f2ff', '#bc13fe', '#00ffff']
+    });
+
     try {
       const response = await fetch('/api/register', {
         method: 'POST',
@@ -96,22 +122,23 @@ export const RegistrationModal: React.FC<RegistrationModalProps> = ({ isOpen, on
 
       if (response.ok) {
         const result = await response.json();
+        // Update with official data (including ID)
         setRegisteredData(result.registration);
-        setIsSuccess(true);
-        confetti({
-          particleCount: 150,
-          spread: 70,
-          origin: { y: 0.6 },
-          colors: ['#00f2ff', '#bc13fe', '#00ffff']
-        });
       } else {
         const err = await response.json();
+        // If it fails, we should probably tell them, but they are already on the success screen
+        // Better to show a "Registration Error" inline or revert
+        console.error('Registration failed', err);
         alert(`Registration failed: ${err.error}${err.details ? '\nDetails: ' + err.details : ''}`);
+        setIsSuccess(false);
+        setShowInvitation(false);
       }
 
     } catch (error) {
       console.error(error);
-      alert('An error occurred');
+      setIsSuccess(false);
+      setShowInvitation(false);
+      alert('An error occurred. Please try again.');
     } finally {
       setIsSubmitting(false);
     }

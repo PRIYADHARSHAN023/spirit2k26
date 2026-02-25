@@ -59,6 +59,15 @@ const counterSchema = new mongoose.Schema({
 const Counter = mongoose.models.Counter || mongoose.model("Counter", counterSchema);
 
 const app = express();
+app.get("/api/health", async (req: Request, res: Response) => {
+    try {
+        await connectToDatabase();
+        res.json({ status: "OK" });
+    } catch (error) {
+        res.status(500).json({ status: "Error", message: error instanceof Error ? error.message : String(error) });
+    }
+});
+
 app.use(express.json({ limit: '10mb' }));
 
 app.post("/api/register", async (req: Request, res: Response) => {

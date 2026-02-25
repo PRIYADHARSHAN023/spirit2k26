@@ -57,14 +57,14 @@ export const InvitationCard: React.FC<InvitationCardProps> = ({ registration, on
         </div>
 
         {/* Invitation Card */}
-        <div 
+        <div
           ref={cardRef}
           className="w-full aspect-[3/4.5] bg-[#0a0a0a] rounded-[2rem] border-2 border-neon-blue/30 p-8 relative overflow-hidden shadow-[0_0_50px_rgba(0,242,255,0.15)]"
         >
           {/* Background Accents */}
           <div className="absolute top-0 right-0 w-32 h-32 bg-neon-blue/10 rounded-full blur-3xl -mr-16 -mt-16" />
           <div className="absolute bottom-0 left-0 w-32 h-32 bg-neon-purple/10 rounded-full blur-3xl -ml-16 -mb-16" />
-          
+
           {/* Header */}
           <div className="text-center mb-8">
             <div className="text-2xl font-black tracking-tighter flex items-center justify-center space-x-1 mb-1">
@@ -88,7 +88,17 @@ export const InvitationCard: React.FC<InvitationCardProps> = ({ registration, on
             <div className="grid grid-cols-2 gap-4 text-sm">
               <div>
                 <div className="text-[9px] uppercase tracking-widest text-white/30 mb-0.5">Registration ID</div>
-                <div className="font-mono text-neon-purple font-bold">{registration.registrationId}</div>
+                {registration.registrationId ? (
+                  <motion.div
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                    className="font-mono text-neon-purple font-bold"
+                  >
+                    {registration.registrationId}
+                  </motion.div>
+                ) : (
+                  <div className="h-5 w-24 bg-white/5 rounded animate-pulse border border-white/10" />
+                )}
               </div>
               <div>
                 <div className="text-[9px] uppercase tracking-widest text-white/30 mb-0.5">Gender</div>
@@ -125,13 +135,17 @@ export const InvitationCard: React.FC<InvitationCardProps> = ({ registration, on
               </div>
               <div className="text-[9px] text-white/40 uppercase tracking-wider">Main Auditorium, JJCET</div>
             </div>
-            <div className="bg-white p-1.5 rounded-lg">
-              <QRCodeSVG 
-                value={registration.registrationId || registration.email} 
-                size={48} 
-                level="H"
-                includeMargin={false}
-              />
+            <div className="bg-white p-1.5 rounded-lg min-w-[60px] min-h-[60px] flex items-center justify-center">
+              {registration.registrationId ? (
+                <QRCodeSVG
+                  value={registration.registrationId || registration.email}
+                  size={48}
+                  level="H"
+                  includeMargin={false}
+                />
+              ) : (
+                <div className="w-12 h-12 bg-black/5 rounded animate-pulse" />
+              )}
             </div>
           </div>
 
@@ -144,14 +158,14 @@ export const InvitationCard: React.FC<InvitationCardProps> = ({ registration, on
 
         {/* Download Buttons */}
         <div className="mt-8 flex space-x-4 w-full">
-          <button 
+          <button
             onClick={downloadAsPNG}
             className="flex-1 flex items-center justify-center space-x-2 py-4 bg-white/5 border border-white/10 rounded-2xl hover:bg-white/10 transition-all text-white/80 font-bold"
           >
             <ImageIcon size={18} />
             <span>PNG</span>
           </button>
-          <button 
+          <button
             onClick={downloadAsPDF}
             className="flex-1 flex items-center justify-center space-x-2 py-4 bg-neon-blue text-black rounded-2xl hover:shadow-[0_0_20px_rgba(0,242,255,0.4)] transition-all font-bold"
           >
