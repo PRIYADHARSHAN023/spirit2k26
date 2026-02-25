@@ -7,23 +7,37 @@ dotenv.config();
 // MongoDB Connection
 const MONGODB_URI = process.env.MONGODB_URI || "mongodb+srv://spirit2k26:spirit2k26%40official2026@cluster0.gsqe29q.mongodb.net/?appName=Cluster0";
 
-// MongoDB Connection Utility
-let cachedConnection: typeof mongoose | null = null;
-
-async function connectToDatabase() {
-    if (cachedConnection) return cachedConnection;
-
-    // Mongoose connection buffer behavior can cause timeouts in serverless
-    // We disable it to fail fast if not connected, and we await the connection
-    mongoose.set('bufferCommands', false);
-
-    cachedConnection = await mongoose.connect(MONGODB_URI, {
-        bufferCommands: false,
-    });
-    console.log("Connected to MongoDB Atlas (Vercel)");
-    return cachedConnection;
+// Connection management for Serverless - Global Cache
+let cached: any = (global as any).mongoose;
+if (!cached) {
+    cached = (global as any).mongoose = { conn: null, promise: null };
 }
 
+async function connectToDatabase() {
+    if (cached.conn) return cached.conn;
+
+    if (!cached.promise) {
+        // Explicitly enable buffering to prevent the error in the screenshot
+        mongoose.set('bufferCommands', true);
+
+        cached.promise = mongoose.connect(MONGODB_URI, {
+            bufferCommands: true,
+            connectTimeoutMS: 20000,
+            socketTimeoutMS: 45000,
+        }).then((m) => m);
+    }
+
+    try {
+        cached.conn = await cached.promise;
+    } catch (e) {
+        cached.promise = null;
+        throw e;
+    }
+    return cached.conn;
+}
+
+// Define Schemas with explicit bufferCommands setting
+const schemaOptions = { bufferCommands: true };
 
 const registrationSchema = new mongoose.Schema({
     registrationId: { type: String, unique: true },
@@ -38,31 +52,31 @@ const registrationSchema = new mongoose.Schema({
     paymentStatus: { type: String, default: 'Pending' },
     paymentScreenshot: String,
     createdAt: { type: Date, default: Date.now }
-});
-
-const Registration = mongoose.models.Registration || mongoose.model("Registration", registrationSchema);
+}, schemaOptions);
 
 const adminSchema = new mongoose.Schema({
     username: { type: String, required: true, unique: true },
     email: { type: String, required: true },
     password: { type: String, required: true },
     createdAt: { type: Date, default: Date.now }
-});
-
-const Admin = mongoose.models.Admin || mongoose.model("Admin", adminSchema);
+}, schemaOptions);
 
 const counterSchema = new mongoose.Schema({
     id: { type: String, required: true },
     seq: { type: Number, default: 0 }
-});
+}, schemaOptions);
 
+// Use existing models if they exist to prevent re-compilation errors
+const Registration = mongoose.models.Registration || mongoose.model("Registration", registrationSchema);
+const Admin = mongoose.models.Admin || mongoose.model("Admin", adminSchema);
 const Counter = mongoose.models.Counter || mongoose.model("Counter", counterSchema);
 
 const app = express();
+
 app.get("/api/health", async (req: Request, res: Response) => {
     try {
         await connectToDatabase();
-        res.json({ status: "OK" });
+        res.json({ status: "OK", connection: mongoose.connection.readyState });
     } catch (error) {
         res.status(500).json({ status: "Error", message: error instanceof Error ? error.message : String(error) });
     }
@@ -71,9 +85,10 @@ app.get("/api/health", async (req: Request, res: Response) => {
 app.use(express.json({ limit: '10mb' }));
 
 app.post("/api/register", async (req: Request, res: Response) => {
-    await connectToDatabase();
-    const { name, college, department, year, gender, phone, email, events, paymentScreenshot } = req.body;
     try {
+        await connectToDatabase();
+        const { name, college, department, year, gender, phone, email, events, paymentScreenshot } = req.body;
+
         const existing = await Registration.findOne({ email });
         if (existing) return res.status(400).json({ error: "Email already registered" });
 
@@ -92,28 +107,16 @@ app.post("/api/register", async (req: Request, res: Response) => {
         await registration.save();
         res.json({ success: true, registration });
     } catch (error) {
+        console.error("Registration fatal error:", error);
         res.status(500).json({ error: "Failed to register", details: error instanceof Error ? error.message : String(error) });
     }
 });
 
-app.post("/api/admin/register", async (req: Request, res: Response) => {
-    await connectToDatabase();
-    const { username, email, password } = req.body;
-    try {
-        const existing = await Admin.findOne({ username });
-        if (existing) return res.status(400).json({ error: "Username already exists" });
-        const admin = new Admin({ username, email, password });
-        await admin.save();
-        res.json({ success: true });
-    } catch (error) {
-        res.status(500).json({ error: "Failed to register admin" });
-    }
-});
-
 app.post("/api/admin/login", async (req: Request, res: Response) => {
-    await connectToDatabase();
-    const { username, password } = req.body;
     try {
+        await connectToDatabase();
+        const { username, password } = req.body;
+
         // Super Admin check
         if (username === "admin2k26" && password === "admin@2k26") {
             return res.json({ success: true, token: "admin-token", role: "ALL" });
@@ -137,9 +140,9 @@ app.post("/api/admin/login", async (req: Request, res: Response) => {
 });
 
 app.get("/api/admin/registrations", async (req: Request, res: Response) => {
-    await connectToDatabase();
-    const { role } = req.query;
     try {
+        await connectToDatabase();
+        const { role } = req.query;
         let query = {};
         if (role && role !== "ALL") {
             query = { events: role };
@@ -152,9 +155,9 @@ app.get("/api/admin/registrations", async (req: Request, res: Response) => {
 });
 
 app.delete("/api/admin/registrations/:id", async (req: Request, res: Response) => {
-    await connectToDatabase();
-    const { id } = req.params;
     try {
+        await connectToDatabase();
+        const { id } = req.params;
         await Registration.findByIdAndDelete(id);
         res.json({ success: true });
     } catch (error) {
