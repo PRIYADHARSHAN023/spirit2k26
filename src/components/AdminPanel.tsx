@@ -173,13 +173,14 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({ isOpen, onClose }) => {
   });
 
   // Analytics Data
+  const isSuperAdmin = adminRole === 'ALL';
   const totalReg = registrations.length;
   const maleCount = registrations.filter(r => r.gender === 'Male').length;
   const femaleCount = registrations.filter(r => r.gender === 'Female').length;
   const otherCount = registrations.filter(r => r.gender === 'Other').length;
   const totalRevenue = totalReg * 200;
 
-  const eventCounts = EVENTS.map(event => ({
+  const eventCounts = (isSuperAdmin ? EVENTS : EVENTS.filter(e => e.name === adminRole)).map(event => ({
     name: event.name,
     count: registrations.filter(r => r.events.includes(event.name)).length,
     suggestion: registrations.filter(r => r.events.includes(event.name)).length * 10 // 10 mins per participant
@@ -301,8 +302,8 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({ isOpen, onClose }) => {
                   { label: 'Male Participants', value: maleCount, icon: <Users size={20} />, color: 'neon-cyan' },
                   { label: 'Female Participants', value: femaleCount, icon: <Users size={20} />, color: 'neon-purple' },
                   { label: 'Other Gender', value: otherCount, icon: <Users size={20} />, color: 'white/40' },
-                  { label: 'Total Revenue', value: `₹${totalRevenue}`, icon: <IndianRupee size={20} />, color: 'emerald-400' },
-                ].map((stat, i) => (
+                  { label: 'Total Revenue', value: `₹${totalRevenue}`, icon: <IndianRupee size={20} />, color: 'emerald-400', superOnly: true },
+                ].filter(stat => !stat.superOnly || isSuperAdmin).map((stat, i) => (
                   <div key={i} className="glass p-6 rounded-3xl border-white/5">
                     <div className={`p-3 rounded-xl bg-white/5 text-white w-fit mb-4`}>
                       {stat.icon}
@@ -404,17 +405,19 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({ isOpen, onClose }) => {
                   />
                 </div>
                 <div className="flex gap-4">
-                  <div className="relative">
-                    <Filter className="absolute left-4 top-1/2 -translate-y-1/2 text-white/20" size={16} />
-                    <select
-                      value={eventFilter}
-                      onChange={(e) => setEventFilter(e.target.value)}
-                      className="glass-input pl-10 appearance-none pr-10"
-                    >
-                      <option value="All">All Events</option>
-                      {EVENTS.map(e => <option key={e.id} value={e.name}>{e.name}</option>)}
-                    </select>
-                  </div>
+                  {isSuperAdmin && (
+                    <div className="relative">
+                      <Filter className="absolute left-4 top-1/2 -translate-y-1/2 text-white/20" size={16} />
+                      <select
+                        value={eventFilter}
+                        onChange={(e) => setEventFilter(e.target.value)}
+                        className="glass-input pl-10 appearance-none pr-10"
+                      >
+                        <option value="All">All Events</option>
+                        {EVENTS.map(e => <option key={e.id} value={e.name}>{e.name}</option>)}
+                      </select>
+                    </div>
+                  )}
                   <div className="relative">
                     <Filter className="absolute left-4 top-1/2 -translate-y-1/2 text-white/20" size={16} />
                     <select
