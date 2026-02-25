@@ -54,11 +54,12 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({ isOpen, onClose }) => {
   const [isLoading, setIsLoading] = useState(false);
   const [selectedScreenshot, setSelectedScreenshot] = useState<string | null>(null);
   const [selectedRegForInvitation, setSelectedRegForInvitation] = useState<Registration | null>(null);
+  const [adminRole, setAdminRole] = useState<string>('ALL');
 
-  const fetchRegistrations = async () => {
+  const fetchRegistrations = async (role: string = adminRole) => {
     setIsLoading(true);
     try {
-      const response = await fetch('/api/admin/registrations');
+      const response = await fetch(`/api/admin/registrations?role=${role}`);
       if (response.ok) {
         const data = await response.json();
         setRegistrations(data);
@@ -79,8 +80,10 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({ isOpen, onClose }) => {
         body: JSON.stringify({ username, password }),
       });
       if (response.ok) {
+        const data = await response.json();
         setIsLoggedIn(true);
-        fetchRegistrations();
+        setAdminRole(data.role);
+        fetchRegistrations(data.role);
       } else {
         alert('Invalid credentials');
       }
@@ -211,11 +214,20 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({ isOpen, onClose }) => {
             <div className="w-20 h-20 bg-neon-purple/20 rounded-3xl flex items-center justify-center mb-8 border border-neon-purple/30">
               <Lock className="text-neon-purple" size={32} />
             </div>
-            <h2 className="text-3xl font-bold mb-8">{isRegistering ? 'Admin Registration' : 'Admin Access'}</h2>
+            <h2 className="text-3xl font-bold mb-2">{isRegistering ? 'Admin Registration' : 'Admin Access'}</h2>
+            <div className="mb-8 text-center space-y-2">
+              <p className="text-white/40 text-xs">
+                Super Admin Login: <span className="text-neon-blue">admin2k26</span> / <span className="text-neon-blue">admin@2k26</span>
+              </p>
+              <p className="text-white/40 text-xs">
+                Event Handler Hint: <span className="text-neon-purple">[EventName]@2026</span> (Login ID & Password same)
+              </p>
+            </div>
+
             <form onSubmit={isRegistering ? handleAdminRegister : handleLogin} className="w-full max-w-sm space-y-4">
               <input
                 type="text"
-                placeholder="Username"
+                placeholder="Username / Login ID"
                 value={username}
                 onChange={(e) => setUsername(e.target.value)}
                 className="w-full glass-input"
@@ -247,7 +259,7 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({ isOpen, onClose }) => {
                 onClick={() => setIsRegistering(!isRegistering)}
                 className="w-full text-white/40 hover:text-white transition-colors text-xs"
               >
-                {isRegistering ? 'Already have an account? Login' : 'Need to register an admin? Click here'}
+                {isRegistering ? 'Already have an account? Login' : 'Need to register a custom admin? Click here'}
               </button>
             </form>
           </div>
@@ -258,7 +270,9 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({ isOpen, onClose }) => {
               <div className="flex items-center space-x-4">
                 <div>
                   <h2 className="text-3xl font-bold">Command Center</h2>
-                  <p className="text-white/40 text-sm mt-1">SPIRIT 2k26 Real-time Analytics</p>
+                  <p className="text-white/40 text-sm mt-1">
+                    {adminRole === 'ALL' ? 'SPIRIT 2k26 Real-time Analytics' : `Admin: ${adminRole}`}
+                  </p>
                 </div>
                 <button
                   onClick={() => setIsLoggedIn(false)}

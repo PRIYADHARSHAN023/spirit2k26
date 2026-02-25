@@ -384,7 +384,7 @@ export default function App() {
                 <div className="space-y-6">
                   {[
                     { icon: <Phone size={20} />, label: 'Call Us', value: '+91 95977 61794', href: 'tel:+919597761794' },
-                    { icon: <Mail size={20} />, label: 'Email', value: 'spirit2k26@itdept.edu', href: 'mailto:spirit2k26@itdept.edu' },
+                    { icon: <Mail size={20} />, label: 'Email', value: 'spirit2k26official@gmail.com', href: 'mailto:spirit2k26official@gmail.com' },
                     { icon: <MapPin size={20} />, label: 'Location', value: 'J.J.College of engineering and technology', href: 'https://share.google/79UHTlel1F5r6Vll2' },
                   ].map((item) => (
                     <a

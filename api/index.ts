@@ -5,7 +5,7 @@ import dotenv from 'dotenv';
 dotenv.config();
 
 // MongoDB Connection
-const MONGODB_URI = process.env.MONGODB_URI || "mongodb+srv://infotech:infotech%402026@cluster0.qnamgvq.mongodb.net/?appName=Cluster0";
+const MONGODB_URI = process.env.MONGODB_URI || "mongodb+srv://spirit2k26:spirit2k26%40official2026@cluster0.gsqe29q.mongodb.net/?appName=Cluster0";
 
 // MongoDB Connection Utility
 let cachedConnection: typeof mongoose | null = null;
@@ -105,16 +105,22 @@ app.post("/api/admin/login", async (req: Request, res: Response) => {
     await connectToDatabase();
     const { username, password } = req.body;
     try {
+        // Super Admin check
+        if (username === "admin2k26" && password === "admin@2k26") {
+            return res.json({ success: true, token: "admin-token", role: "ALL" });
+        }
+
+        // Handler check: [EventName]@2026 / [EventName]@2026
+        if (username.endsWith("@2026") && username === password) {
+            const eventName = username.split("@")[0];
+            return res.json({ success: true, token: "handler-token", role: eventName });
+        }
+
         const admin = await Admin.findOne({ username, password });
         if (admin) {
-            res.json({ success: true, token: "mock-jwt-token" });
+            res.json({ success: true, token: "mock-jwt-token", role: "ALL" });
         } else {
-            const count = await Admin.countDocuments();
-            if (count === 0 && username === "admin" && password === "spirit2k26") {
-                res.json({ success: true, token: "mock-jwt-token" });
-            } else {
-                res.status(401).json({ error: "Invalid credentials" });
-            }
+            res.status(401).json({ error: "Invalid credentials" });
         }
     } catch (error) {
         res.status(500).json({ error: "Login failed" });
@@ -123,8 +129,13 @@ app.post("/api/admin/login", async (req: Request, res: Response) => {
 
 app.get("/api/admin/registrations", async (req: Request, res: Response) => {
     await connectToDatabase();
+    const { role } = req.query;
     try {
-        const registrations = await Registration.find().sort({ createdAt: -1 });
+        let query = {};
+        if (role && role !== "ALL") {
+            query = { events: role };
+        }
+        const registrations = await Registration.find(query).sort({ createdAt: -1 });
         res.json(registrations);
     } catch (error) {
         res.status(500).json({ error: "Failed to fetch registrations" });
