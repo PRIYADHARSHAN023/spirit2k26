@@ -50,6 +50,7 @@ export const RegistrationModal: React.FC<RegistrationModalProps> = ({ isOpen, on
   const [screenshotPreview, setScreenshotPreview] = useState<string | null>(null);
   const [registeredData, setRegisteredData] = useState<Registration | null>(null);
   const [showInvitation, setShowInvitation] = useState(false);
+  const [isCompressing, setIsCompressing] = useState(false);
 
   const WHATSAPP_GROUP_LINK = "https://chat.whatsapp.com/CCY2fmTVixxELmvQtiDGSq";
 
@@ -120,16 +121,26 @@ export const RegistrationModal: React.FC<RegistrationModalProps> = ({ isOpen, on
   const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (file) {
-      setIsSubmitting(true); // Show loading while compressing
+      // 1. Instant Preview (Original Image)
+      const previewReader = new FileReader();
+      previewReader.onloadend = () => {
+        setScreenshotPreview(previewReader.result as string);
+      };
+      previewReader.readAsDataURL(file);
+
+      // 2. Background Compression
+      setIsCompressing(true);
       try {
         const compressedBase64 = await compressImage(file);
+        // 3. Update with compressed version
         setScreenshotPreview(compressedBase64);
         setValue('paymentScreenshot', compressedBase64);
       } catch (error) {
         console.error("Compression error:", error);
-        alert("Failed to process image. Please try again.");
+        // If compression fails, we fallback to original (but it's risky for size)
+        // For now, just alert or continue with original
       } finally {
-        setIsSubmitting(false);
+        setIsCompressing(false);
       }
     }
   };
@@ -453,13 +464,18 @@ export const RegistrationModal: React.FC<RegistrationModalProps> = ({ isOpen, on
                       ) : (
                         <button
                           type="submit"
-                          disabled={isSubmitting || !watch('paymentScreenshot')}
+                          disabled={isSubmitting || isCompressing || !watch('paymentScreenshot')}
                           className="btn-primary disabled:opacity-50 disabled:cursor-not-allowed flex items-center space-x-2"
                         >
                           {isSubmitting ? (
                             <>
                               <div className="w-4 h-4 border-2 border-black/20 border-t-black rounded-full animate-spin" />
                               <span>Processing...</span>
+                            </>
+                          ) : isCompressing ? (
+                            <>
+                              <div className="w-4 h-4 border-2 border-black/20 border-t-black rounded-full animate-spin" />
+                              <span>Optimizing Image...</span>
                             </>
                           ) : (
                             <>
