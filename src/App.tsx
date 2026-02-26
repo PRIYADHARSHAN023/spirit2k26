@@ -121,15 +121,15 @@ export default function App() {
             >
               <div className="h-24 md:h-32 flex items-center justify-center">
                 <img
-                  src="/assets/college_logo.png"
-                  alt="JJ College Logo"
+                  src="/assets/college-logo.png"
+                  alt="College Logo"
                   className="h-full object-contain"
                   onError={(e) => {
                     (e.target as HTMLImageElement).style.display = 'none';
                     const parent = (e.target as HTMLImageElement).parentElement;
                     if (parent) {
                       const fallback = document.createElement('div');
-                      fallback.className = 'text-3xl font-bold neon-text-blue';
+                      fallback.className = 'text-3xl font-bold neon-text-blue text-center';
                       fallback.innerText = 'JJ COLLEGE OF ENGINEERING AND TECHNOLOGY';
                       parent.appendChild(fallback);
                     }

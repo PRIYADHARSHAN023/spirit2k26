@@ -66,13 +66,21 @@ export const InvitationCard: React.FC<InvitationCardProps> = ({ registration, on
           <div className="absolute bottom-0 left-0 w-32 h-32 bg-neon-purple/10 rounded-full blur-3xl -ml-16 -mb-16" />
 
           {/* Header */}
-          <div className="text-center mb-8">
-            <div className="text-2xl font-black tracking-tighter flex items-center justify-center space-x-1 mb-1">
+          <div className="flex flex-col items-center mb-6">
+            <img
+              src="/assets/college-logo.png"
+              alt="College Logo"
+              className="h-12 object-contain mb-4"
+            />
+            <div className="text-[9px] uppercase tracking-[0.1em] text-white/60 font-medium mb-1">
+              Department of Information Technology
+            </div>
+            <div className="text-[11px] uppercase tracking-[0.3em] text-neon-blue font-black mb-4">
+              Presents
+            </div>
+            <div className="text-3xl font-black tracking-tighter flex items-center justify-center space-x-1">
               <span className="text-neon-blue">SPIRIT</span>
               <span className="text-white">2k26</span>
-            </div>
-            <div className="text-[10px] uppercase tracking-[0.2em] text-white/40 font-bold">
-              Department of Information Technology
             </div>
           </div>
 

@@ -21,7 +21,7 @@ const STEPS = [
 ];
 
 const REGISTRATION_FEE = 200;
-const UPI_ID = "manor6272-1@oksbi";
+const UPI_ID = "prakashpriya43739@okhdfcbank";
 
 export const RegistrationModal: React.FC<RegistrationModalProps> = ({ isOpen, onClose, initialEvent }) => {
   const { register, handleSubmit, watch, setValue, trigger, formState: { errors } } = useForm({
@@ -329,11 +329,10 @@ export const RegistrationModal: React.FC<RegistrationModalProps> = ({ isOpen, on
                           <div className="text-white/40 text-sm mb-6">Registration Fee</div>
 
                           <div className="bg-white p-4 rounded-2xl mb-6 inline-block">
-                            <QRCodeSVG
-                              value={`upi://pay?pa=${UPI_ID}&pn=SPIRIT2K26&am=${REGISTRATION_FEE}&cu=INR`}
-                              size={160}
-                              level="H"
-                              includeMargin={true}
+                            <img
+                              src="/assets/payment-qr.jpg"
+                              alt="Payment QR"
+                              className="w-40 h-40 object-contain"
                             />
                           </div>
 

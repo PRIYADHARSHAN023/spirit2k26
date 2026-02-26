@@ -24,10 +24,10 @@ export interface Event {
 
 export const EVENTS: Event[] = [
   // Technical
-  { 
-    id: 'paper-pres', 
-    name: 'Paper Presentation', 
-    category: 'Technical', 
+  {
+    id: 'paper-pres',
+    name: 'Idea Presentation',
+    category: 'Technical',
     description: 'Showcase your research and presentation skills.',
     details: {
       venue: 'Seminar Hall 1',
@@ -46,10 +46,10 @@ export const EVENTS: Event[] = [
       timing: 'Full Day'
     }
   },
-  { 
-    id: 'bug-buster', 
-    name: 'Bug Buster', 
-    category: 'Technical', 
+  {
+    id: 'bug-buster',
+    name: 'Bug Buster',
+    category: 'Technical',
     description: 'Debug complex code and find the hidden logic.',
     details: {
       venue: 'Infozone',
@@ -66,10 +66,10 @@ export const EVENTS: Event[] = [
       selection: 'Time and errors considered'
     }
   },
-  { 
-    id: 'startup-30', 
-    name: '30 Minutes Startup', 
-    category: 'Technical', 
+  {
+    id: 'startup-30',
+    name: '30 Minutes Startup',
+    category: 'Technical',
     description: 'Create innovative solutions and pitch your startup idea.',
     details: {
       venue: 'Work Station',
@@ -86,10 +86,10 @@ export const EVENTS: Event[] = [
       timing: '45 Minutes'
     }
   },
-  { 
-    id: 'prompt-prodigy', 
-    name: 'Prompt Prodigy', 
-    category: 'Technical', 
+  {
+    id: 'prompt-prodigy',
+    name: 'Prompt Prodigy',
+    category: 'Technical',
     description: 'Master the art of AI communication and prompt engineering.',
     details: {
       venue: 'Infozone',
@@ -104,10 +104,10 @@ export const EVENTS: Event[] = [
       ]
     }
   },
-  { 
-    id: 'web-design', 
-    name: 'Web Design', 
-    category: 'Technical', 
+  {
+    id: 'web-design',
+    name: 'Web Design',
+    category: 'Technical',
     description: 'Create stunning, responsive, and functional web interfaces.',
     details: {
       venue: 'Work Station',
@@ -124,12 +124,12 @@ export const EVENTS: Event[] = [
       timing: '40 Minutes'
     }
   },
-  
+
   // Non-Technical
-  { 
-    id: 'connectify-fiesta', 
-    name: 'Connectify Fiesta', 
-    category: 'Non-Technical', 
+  {
+    id: 'connectify-fiesta',
+    name: 'Connectify Fiesta',
+    category: 'Non-Technical',
     description: 'Connect the dots and solve visual and lyrical puzzles.',
     details: {
       venue: 'Class Room',
@@ -146,10 +146,10 @@ export const EVENTS: Event[] = [
       timing: '10–20 Minutes per round'
     }
   },
-  { 
-    id: 'blind-drawing', 
-    name: 'Blind Drawing', 
-    category: 'Non-Technical', 
+  {
+    id: 'blind-drawing',
+    name: 'Blind Drawing',
+    category: 'Non-Technical',
     description: 'Draw without looking, guided only by your team.',
     details: {
       venue: 'Class Room',
@@ -167,10 +167,10 @@ export const EVENTS: Event[] = [
       timing: '15 Minutes'
     }
   },
-  { 
-    id: 'stress-interview', 
-    name: 'Stress Interview', 
-    category: 'Non-Technical', 
+  {
+    id: 'stress-interview',
+    name: 'Stress Interview',
+    category: 'Non-Technical',
     description: 'Participants will face stressful interview questions. Difficult and confusing questions asked. Confidence tested.',
     details: {
       venue: 'Class Room',
@@ -181,10 +181,10 @@ export const EVENTS: Event[] = [
       type: 'Individual Only'
     }
   },
-  { 
-    id: 'emoji-story', 
-    name: 'Emoji Story Creation', 
-    category: 'Non-Technical', 
+  {
+    id: 'emoji-story',
+    name: 'Emoji Story Creation',
+    category: 'Non-Technical',
     description: 'Tell a compelling story using only emojis.',
     details: {
       venue: 'Class Room',
@@ -202,12 +202,12 @@ export const EVENTS: Event[] = [
       timing: '2–3 Minutes'
     }
   },
-  
+
   // Online
-  { 
-    id: 'free-fire', 
-    name: 'Free Fire Online Event', 
-    category: 'Online', 
+  {
+    id: 'free-fire',
+    name: 'Free Fire Online Event',
+    category: 'Online',
     description: 'Battle it out in the ultimate survival shooter.',
     details: {
       handler: 'Naveen Raj',
@@ -223,10 +223,10 @@ export const EVENTS: Event[] = [
       ]
     }
   },
-  { 
-    id: 'short-film', 
-    name: 'Short Film', 
-    category: 'Online', 
+  {
+    id: 'short-film',
+    name: 'Short Film',
+    category: 'Online',
     description: 'Capture moments and tell stories through the lens.',
     details: {
       handler: 'Priyadharshan',
@@ -241,10 +241,10 @@ export const EVENTS: Event[] = [
       ]
     }
   },
-  { 
-    id: 'photography', 
-    name: 'Photography', 
-    category: 'Online', 
+  {
+    id: 'photography',
+    name: 'Photography',
+    category: 'Online',
     description: 'Capture the essence of the symposium on campus.',
     details: {
       handler: 'Kanmani',
