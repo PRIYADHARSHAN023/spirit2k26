@@ -554,8 +554,26 @@ export const RegistrationModal: React.FC<RegistrationModalProps> = ({ isOpen, on
                                   UPI ID: {upiId}
                                 </div>
                                 <p className="text-white/80 text-sm font-bold uppercase tracking-wider mb-6">
-                                  Scan QR or use UPI ID to make payment
+                                  Scan QR or use an App to Make Payment
                                 </p>
+
+                                <div className="grid grid-cols-2 gap-2 mb-6 w-full">
+                                  {['Google Pay', 'PhonePe', 'Paytm', 'Other UPI'].map(app => (
+                                    <button
+                                      key={app}
+                                      type="button"
+                                      onClick={() => {
+                                        // Omitting 'pn=' (Payee Name) since strict merchant policies on personal accounts cause failure
+                                        const upiUrl = `upi://pay?pa=${upiId}&am=${totalFee}&cu=INR`;
+                                        window.open(upiUrl, '_blank');
+                                      }}
+                                      className="flex items-center justify-center space-x-2 p-3 bg-white/5 border border-white/10 rounded-xl hover:bg-white/10 transition-all text-[11px] font-medium"
+                                    >
+                                      <Smartphone size={14} />
+                                      <span>Open {app}</span>
+                                    </button>
+                                  ))}
+                                </div>
 
                                 <div className="border-t border-white/10 pt-6">
                                   <p className="text-[10px] text-white/40 uppercase tracking-widest mb-3">Step 2: Upload Proof</p>

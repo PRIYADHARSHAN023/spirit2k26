@@ -194,7 +194,13 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({ isOpen, onClose }) => {
   const maleCount = registrations.filter(r => r.gender === 'Male').length;
   const femaleCount = registrations.filter(r => r.gender === 'Female').length;
   const otherCount = registrations.filter(r => r.gender === 'Other').length;
-  const totalRevenue = totalReg * 200;
+
+  // Calculate dynamic revenue based on event fees
+  const totalRevenue = registrations.reduce((acc, curr) => {
+    if (curr.events.includes('E-Football (PES)')) return acc + 50;
+    if (curr.events.includes('Free Fire')) return acc + 100;
+    return acc + 200; // Default Symposium Registration Fee
+  }, 0);
 
   const eventCounts = (isSuperAdmin ? EVENTS : EVENTS.filter(e => e.name === adminRole)).map(event => ({
     name: event.name,
@@ -236,8 +242,11 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({ isOpen, onClose }) => {
               <p className="text-white/40 text-xs">
                 Super Admin Login: <span className="text-neon-blue">admin2k26</span> / <span className="text-neon-blue">admin@2k26</span>
               </p>
-              <p className="text-white/40 text-xs">
-                Event Handler Hint: <span className="text-neon-purple">[EventName]@2026</span> (Login ID & Password same)
+              <p className="text-white/40 text-[10px] mt-1">
+                Event Handler Hint: <span className="text-neon-purple">[EventName]@2026</span>
+              </p>
+              <p className="text-white/40 text-[10px]">
+                E.g., "efootball@2026", "freefire@2026" or "idea@2026" (Login ID & Password are the same)
               </p>
             </div>
 
@@ -549,7 +558,7 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({ isOpen, onClose }) => {
                               <button
                                 onClick={() => handleDelete(reg._id as string, reg.name)}
                                 className="w-8 h-8 rounded-full bg-red-500/10 text-red-400 flex items-center justify-center hover:bg-red-500 hover:text-white transition-colors"
-                                title={role === 'ALL' ? "Delete Registration" : "Remove from my event"}
+                                title={adminRole === 'ALL' ? "Delete Registration" : "Remove from my event"}
                               >
                                 <Trash2 size={16} />
                               </button>

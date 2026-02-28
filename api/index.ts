@@ -190,8 +190,19 @@ app.post("/api/admin/login", async (req: Request, res: Response) => {
         // Handler check: [EventName]@2026 / [EventName]@2026
         const lowerUser = username.toLowerCase();
         if (lowerUser.endsWith("@2026") && username === password) {
-            const eventName = username.split("@")[0];
-            return res.json({ success: true, token: "handler-token", role: eventName });
+            let eventName = username.split("@")[0];
+            let role = eventName;
+
+            // Map common abbreviations to exact Event Names
+            if (eventName.toLowerCase() === 'efootball' || eventName.toLowerCase() === 'e-football' || eventName.toLowerCase() === 'e-football (pes)') {
+                role = 'E-Football (PES)';
+            } else if (eventName.toLowerCase() === 'freefire' || eventName.toLowerCase() === 'free fire') {
+                role = 'Free Fire';
+            } else if (eventName.toLowerCase() === 'idea') {
+                role = 'Idea Presentation';
+            }
+
+            return res.json({ success: true, token: "handler-token", role: role });
         }
 
         const admin = await Admin.findOne({ username, password });
