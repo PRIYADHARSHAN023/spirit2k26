@@ -258,6 +258,9 @@ export const EVENTS: Event[] = [
     category: 'Online',
     description: 'The ultimate virtual football showdown.',
     details: {
+      venue: 'Online',
+      timeSlot: 'Will be announced',
+      date: '08/03/2026',
       handler: 'B.Bareeth',
       contact: { name: 'B.Bareeth', phone: '8122976882' },
       teamSize: 'Individual (1 vs 1)',
@@ -283,6 +286,9 @@ export const EVENTS: Event[] = [
     category: 'Online',
     description: 'Squad battle royale for survival.',
     details: {
+      venue: 'Online',
+      timeSlot: 'Will be announced',
+      date: '08/03/2026',
       handler: 'Naveen Raj',
       contact: { name: 'Naveen Raj', phone: '6374520749' },
       teamSize: 'Squad (4 members)',

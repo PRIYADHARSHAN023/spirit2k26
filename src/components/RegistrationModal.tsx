@@ -547,30 +547,15 @@ export const RegistrationModal: React.FC<RegistrationModalProps> = ({ isOpen, on
                                   <img
                                     src={qrSource}
                                     alt="Payment QR"
-                                    className="w-36 h-36 object-contain"
+                                    className="w-48 h-48 object-contain"
                                   />
                                 </div>
-                                <div className="text-neon-blue font-mono text-sm mb-4">{upiId}</div>
-                                <p className="text-white/80 text-sm font-bold uppercase tracking-wider mb-6 bg-neon-blue/10 py-2 px-4 rounded-xl border border-neon-blue/20">
-                                  Make a payment and get screenshot
-                                </p>
-
-                                <div className="grid grid-cols-2 gap-2 mb-6">
-                                  {['Google Pay', 'PhonePe', 'Paytm', 'Other UPI'].map(app => (
-                                    <button
-                                      key={app}
-                                      type="button"
-                                      onClick={() => {
-                                        const upiUrl = `upi://pay?pa=${upiId}&pn=SPIRIT2K26&am=${totalFee}&cu=INR`;
-                                        window.open(upiUrl, '_blank');
-                                      }}
-                                      className="flex items-center justify-center space-x-2 p-2 bg-white/5 border border-white/10 rounded-xl hover:bg-white/10 transition-all text-[10px] font-medium"
-                                    >
-                                      <Smartphone size={12} />
-                                      <span>{app}</span>
-                                    </button>
-                                  ))}
+                                <div className="text-neon-blue font-mono text-sm mb-4 bg-neon-blue/10 py-2 px-4 rounded-xl border border-neon-blue/20">
+                                  UPI ID: {upiId}
                                 </div>
+                                <p className="text-white/80 text-sm font-bold uppercase tracking-wider mb-6">
+                                  Scan QR or use UPI ID to make payment
+                                </p>
 
                                 <div className="border-t border-white/10 pt-6">
                                   <p className="text-[10px] text-white/40 uppercase tracking-widest mb-3">Step 2: Upload Proof</p>
