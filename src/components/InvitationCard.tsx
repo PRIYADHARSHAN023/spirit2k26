@@ -113,8 +113,21 @@ export const InvitationCard: React.FC<InvitationCardProps> = ({ registration, on
           {/* Participant Info */}
           <div className="space-y-6 mb-8">
             <div className="text-center">
-              <div className="text-[10px] uppercase tracking-widest text-white/30 mb-1">Official Participant</div>
-              <div className="text-2xl font-bold neon-text-blue">{registration.name}</div>
+              <div className="text-[10px] uppercase tracking-widest text-white/30 mb-1">
+                {registration.regType === 'Team' ? `Team: ${registration.teamName}` : 'Official Participant'}
+              </div>
+              <div className={`font-bold neon-text-blue leading-tight ${registration.regType === 'Team' ? 'text-xl' : 'text-2xl'}`}>
+                {registration.name}
+              </div>
+              {registration.regType === 'Team' && registration.memberNames && registration.memberNames.filter(n => n.trim() !== '').length > 0 && (
+                <div className="mt-2 flex flex-wrap justify-center gap-x-3 gap-y-1">
+                  {registration.memberNames.filter(n => n.trim() !== '').map((member, idx) => (
+                    <span key={idx} className="text-sm text-white/60 font-medium">
+                      {member}
+                    </span>
+                  ))}
+                </div>
+              )}
             </div>
 
             <div className="grid grid-cols-2 gap-4 text-sm">

@@ -19,6 +19,9 @@ export interface Event {
     type?: string;
     selection?: string;
     date?: string;
+    fee?: number;
+    upiId?: string;
+    qrAsset?: string;
   };
 }
 
@@ -161,7 +164,7 @@ export const EVENTS: Event[] = [
       teamSize: '2–3 members',
       rules: [
         'Eyes covered',
-        'Guide by voice only',
+        'Guide by friends or team mate (voice only)',
         'No touching',
         'Continuous drawing',
         'Fastest accurate drawing wins'
@@ -173,14 +176,36 @@ export const EVENTS: Event[] = [
     id: 'stress-interview',
     name: 'Stress Interview',
     category: 'Non-Technical',
-    description: 'Participants will face stressful interview questions. Difficult and confusing questions asked. Confidence tested.',
+    description: 'A comedy show under pressure. Unexpected questions, dramatic reactions, and unlimited entertainment!',
     details: {
       venue: 'Class Room',
       timeSlot: '2:00 PM – 3:00 PM',
       handler: 'Gokul',
       contact: { name: 'Gokul', phone: '7373138989' },
       teamSize: 'Individual Only',
-      type: 'Individual Only'
+      type: 'Individual Only',
+      rounds: [
+        'Round 1: Break the Fear (Swap emotions of Romantic/Action movie scenes)',
+        'Round 2: Critical Thinking (Think Wrong - give opposite answers; Situation Handling - solve critical comedy situations)'
+      ]
+    }
+  },
+  {
+    id: 'photography',
+    name: 'Photography',
+    category: 'Non-Technical',
+    description: 'Capture the essence of the symposium on campus.',
+    details: {
+      venue: 'Campus Wide',
+      timeSlot: 'Full Day',
+      handler: 'Kanmani',
+      contact: { name: 'Kanmani', phone: '9342247385' },
+      teamSize: 'Individual',
+      timing: 'Full Day',
+      type: 'On Campus',
+      rules: [
+        'Device: Any device (Phone or Camera)'
+      ]
     }
   },
   {
@@ -207,25 +232,6 @@ export const EVENTS: Event[] = [
 
   // Online
   {
-    id: 'free-fire',
-    name: 'Free Fire Online Event',
-    category: 'Online',
-    description: 'Battle it out in the ultimate survival shooter.',
-    details: {
-      handler: 'Naveen Raj',
-      contact: { name: 'Naveen Raj', phone: '6374520749' },
-      teamSize: '4 Members',
-      date: '08/03/2026',
-      type: 'Online',
-      rules: [
-        'no rules clash squad',
-        'no roof top',
-        'body shot match',
-        'if any improper game play the team will be eliminated.'
-      ]
-    }
-  },
-  {
     id: 'short-film',
     name: 'Short Film',
     category: 'Online',
@@ -247,16 +253,49 @@ export const EVENTS: Event[] = [
     }
   },
   {
-    id: 'photography',
-    name: 'Photography',
+    id: 'efootball',
+    name: 'E-Football (PES)',
     category: 'Online',
-    description: 'Capture the essence of the symposium on campus.',
+    description: 'The ultimate virtual football showdown.',
     details: {
-      handler: 'Kanmani',
-      contact: { name: 'Kanmani', phone: '9342247385' },
-      teamSize: 'Individual',
-      timing: 'Full Day',
-      type: 'On Campus'
+      handler: 'B.Bareeth',
+      contact: { name: 'B.Bareeth', phone: '8122976882' },
+      teamSize: 'Individual (1 vs 1)',
+      type: 'Online',
+      fee: 50,
+      upiId: 'bareeth253@okaxis',
+      qrAsset: '/assets/payment-qr-bareeth.jpg',
+      rules: [
+        'Knockout stage',
+        'Mode: 1 vs 1',
+        'Match Duration: 6 to 10 minutes',
+        'Each participant can register only once',
+        'Extra Time & Penalties: On',
+        'Condition: Random (Both)',
+        'Network issues lead to elimination',
+        'Organizer decision is final'
+      ]
+    }
+  },
+  {
+    id: 'freefire',
+    name: 'Free Fire',
+    category: 'Online',
+    description: 'Squad battle royale for survival.',
+    details: {
+      handler: 'Naveen Raj',
+      contact: { name: 'Naveen Raj', phone: '6374520749' },
+      teamSize: 'Squad (4 members)',
+      type: 'Online',
+      fee: 100,
+      upiId: 'naveennaveenraj19807@oksbi',
+      qrAsset: '/assets/payment-qr-naveen.jpg',
+      rules: [
+        'Round 1: Bermuda',
+        'Round 2: Top 4 teams Semi-final (Clash Squad)',
+        'Round 3: Final (Clash Squad)',
+        'Contact admin for further details'
+      ]
     }
   },
 ];
@@ -267,7 +306,8 @@ export interface Registration {
   regType: 'Individual' | 'Team';
   teamName?: string;
   teamMembers?: string;
-  name: string;
+  memberNames?: string[];
+  name: string; // Lead Name
   college: string;
   department: string;
   year: string;

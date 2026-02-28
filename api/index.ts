@@ -1,6 +1,7 @@
 import express, { Request, Response } from 'express';
 import mongoose from 'mongoose';
 import dotenv from 'dotenv';
+import nodemailer from 'nodemailer';
 
 dotenv.config();
 
@@ -44,6 +45,7 @@ const registrationSchema = new mongoose.Schema({
     regType: { type: String, required: true, default: 'Individual' },
     teamName: { type: String },
     teamMembers: { type: String },
+    memberNames: [{ type: String }],
     name: { type: String, required: true },
     college: { type: String, required: true },
     department: { type: String, required: true },
@@ -74,6 +76,15 @@ const Registration = mongoose.models.Registration || mongoose.model("Registratio
 const Admin = mongoose.models.Admin || mongoose.model("Admin", adminSchema);
 const Counter = mongoose.models.Counter || mongoose.model("Counter", counterSchema);
 
+// Email Transporter
+const transporter = nodemailer.createTransport({
+    service: 'gmail',
+    auth: {
+        user: process.env.EMAIL_USER || "spirit2k26official@gmail.com",
+        pass: process.env.EMAIL_PASS
+    }
+});
+
 const app = express();
 
 app.get("/api/health", async (req: Request, res: Response) => {
@@ -90,7 +101,7 @@ app.use(express.json({ limit: '10mb' }));
 app.post("/api/register", async (req: Request, res: Response) => {
     try {
         await connectToDatabase();
-        const { name, college, department, year, gender, phone, email, events, paymentScreenshot } = req.body;
+        const { regType, teamName, teamMembers, memberNames, name, college, department, year, gender, phone, email, events, paymentScreenshot } = req.body;
 
         const existing = await Registration.findOne({ email });
         if (existing) return res.status(400).json({ error: "Email already registered" });
@@ -103,11 +114,48 @@ app.post("/api/register", async (req: Request, res: Response) => {
         const registrationId = `SPIRIT${String(counter.seq).padStart(3, '0')}`;
 
         const registration = new Registration({
-            registrationId, name, college, department, year, gender, phone, email, events, paymentScreenshot,
+            registrationId, regType, teamName, teamMembers, memberNames, name, college, department, year, gender, phone, email, events, paymentScreenshot,
             paymentStatus: 'Completed'
         });
 
         await registration.save();
+
+        // Send Confirmation Email
+        try {
+            const mailOptions = {
+                from: process.env.EMAIL_USER || "spirit2k26official@gmail.com",
+                to: email,
+                subject: `Registration Successful - SPIRIT 2k26 (ID: ${registrationId})`,
+                html: `
+                    <div style="font-family: sans-serif; max-width: 600px; margin: auto; padding: 20px; border: 1px solid #eee; border-radius: 10px;">
+                        <h2 style="color: #00f2ff; text-align: center;">SPIRIT 2k26</h2>
+                        <p>Hi <strong>${name}</strong>,</p>
+                        <p>Thank you for registering for SPIRIT 2k26! Your registration has been confirmed.</p>
+                        
+                        <div style="background: #f9f9f9; padding: 15px; border-radius: 8px; margin: 20px 0;">
+                            <p style="margin: 5px 0;"><strong>Registration ID:</strong> <span style="font-family: monospace; color: #bc13fe;">${registrationId}</span></p>
+                            <p style="margin: 5px 0;"><strong>Category:</strong> ${regType}</p>
+                            ${regType === 'Team' ? `<p style="margin: 5px 0;"><strong>Team Name:</strong> ${teamName}</p>` : ''}
+                            <p style="margin: 5px 0;"><strong>College:</strong> ${college}</p>
+                            <p style="margin: 5px 0;"><strong>Events:</strong> ${events.join(', ')}</p>
+                        </div>
+                        
+                        <p>Please find your invitation card attached to your dashboard on our website. Bring the soft copy of the invitation for entry.</p>
+                        
+                        <div style="margin-top: 30px; border-top: 1px solid #eee; padding-top: 20px; font-size: 12px; color: #666;">
+                            <p><strong>Venue:</strong> JJ College of Engineering and Technology (JJCET)</p>
+                            <p><strong>Address:</strong> Ammapettai, Poolangulathupatti Post, Tiruchirappalli - 620009, Tamil Nadu.</p>
+                            <p>For any queries, contact our organizing team.</p>
+                        </div>
+                    </div>
+                `
+            };
+            await transporter.sendMail(mailOptions);
+        } catch (mailErr) {
+            console.error("Email failed to send:", mailErr);
+            // Don't fail the whole registration if email fails
+        }
+
         res.json({ success: true, registration });
     } catch (error) {
         console.error("Registration fatal error:", error);
@@ -151,7 +199,7 @@ app.get("/api/admin/registrations", async (req: Request, res: Response) => {
         if (role && role !== "ALL") {
             query = { events: role };
         }
-        const registrations = await Registration.find(query).sort({ createdAt: -1 });
+        const registrations = await (Registration as any).find(query).sort({ createdAt: -1 });
         res.json(registrations);
     } catch (error) {
         res.status(500).json({ error: "Failed to fetch registrations" });
@@ -162,7 +210,7 @@ app.delete("/api/admin/registrations/:id", async (req: Request, res: Response) =
     try {
         await connectToDatabase();
         const { id } = req.params;
-        await Registration.findByIdAndDelete(id);
+        await (Registration as any).findByIdAndDelete(id);
         res.json({ success: true });
     } catch (error) {
         res.status(500).json({ error: "Failed to delete registration" });

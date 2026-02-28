@@ -30,7 +30,8 @@ export const RegistrationModal: React.FC<RegistrationModalProps> = ({ isOpen, on
       regType: 'Individual',
       teamName: '',
       teamMembers: '1',
-      name: '',
+      memberNames: ['', '', '', ''],
+      name: '', // Lead Name
       college: '',
       department: '',
       year: '1',
@@ -63,7 +64,7 @@ export const RegistrationModal: React.FC<RegistrationModalProps> = ({ isOpen, on
   const [showInvitation, setShowInvitation] = useState(false);
   const [hasVisitedGoogleForm, setHasVisitedGoogleForm] = useState(false);
 
-  const GOOGLE_FORM_LINK = "https://forms.gle/GAVCvgYcmMJ3BvSq5";
+  const GOOGLE_FORM_LINK = "https://forms.gle/y19jcUDRXBzYqNot5";
   const WHATSAPP_GROUP_LINK = "https://chat.whatsapp.com/CCY2fmTVixxELmvQtiDGSq";
 
   const regType = watch('regType');
@@ -304,17 +305,27 @@ export const RegistrationModal: React.FC<RegistrationModalProps> = ({ isOpen, on
                               </div>
                               <div className="space-y-2 md:col-span-1">
                                 <label className="text-sm font-bold text-white/60 uppercase tracking-widest text-[9px]">Team Members (1-4)</label>
-                                <select {...register('teamMembers', { required: regType === 'Team' })} className="w-full glass-input">
-                                  <option value="1">1 Member</option>
-                                  <option value="2">2 Members</option>
-                                  <option value="3">3 Members</option>
-                                  <option value="4">4 Members</option>
-                                </select>
+                                <div className="flex space-x-2">
+                                  {['1', '2', '3', '4'].map((num) => (
+                                    <button
+                                      key={num}
+                                      type="button"
+                                      onClick={() => setValue('teamMembers', num)}
+                                      className={`flex-1 py-3 rounded-xl border transition-all font-bold ${watch('teamMembers') === num
+                                        ? 'bg-neon-purple/20 border-neon-purple text-neon-purple shadow-[0_0_15px_rgba(188,19,254,0.2)]'
+                                        : 'bg-white/5 border-white/10 text-white/40 hover:bg-white/10'
+                                        }`}
+                                    >
+                                      {num}
+                                    </button>
+                                  ))}
+                                  <input type="hidden" {...register('teamMembers', { required: regType === 'Team' })} />
+                                </div>
                               </div>
                             </>
                           )}
                           <div className="space-y-2">
-                            <label className="text-sm font-bold text-white/60 uppercase tracking-widest text-[9px]">Full Name {regType === 'Team' && '(Lead)'}</label>
+                            <label className="text-sm font-bold text-white/60 uppercase tracking-widest text-[9px]">Full Name {regType === 'Team' ? '(Lead / Captain)' : ''}</label>
                             <input {...register('name', { required: true })} className="w-full glass-input" placeholder="John Doe" />
                           </div>
                           <div className="space-y-2">
@@ -349,6 +360,28 @@ export const RegistrationModal: React.FC<RegistrationModalProps> = ({ isOpen, on
                             <label className="text-sm font-bold text-white/60 uppercase tracking-widest text-[9px]">Email ID</label>
                             <input {...register('email', { required: true, pattern: /^\S+@\S+$/i })} className="w-full glass-input" placeholder="john@example.com" />
                           </div>
+
+                          {regType === 'Team' && parseInt(watch('teamMembers')) > 1 && (
+                            <motion.div
+                              initial={{ opacity: 0, height: 0 }}
+                              animate={{ opacity: 1, height: 'auto' }}
+                              className="md:col-span-2 space-y-4 pt-4 border-t border-white/10"
+                            >
+                              <p className="text-[10px] uppercase tracking-[0.2em] text-neon-purple font-bold">Additional Member Names</p>
+                              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                {[...Array(parseInt(watch('teamMembers')) - 1)].map((_, i) => (
+                                  <div key={i} className="space-y-2">
+                                    <label className="text-sm font-bold text-white/60 uppercase tracking-widest text-[9px]">Member {i + 2} Name</label>
+                                    <input
+                                      {...register(`memberNames.${i}` as any, { required: true })}
+                                      className="w-full glass-input"
+                                      placeholder={`Member ${i + 2} Full Name`}
+                                    />
+                                  </div>
+                                ))}
+                              </div>
+                            </motion.div>
+                          )}
                         </div>
                       </motion.div>
                     )}
@@ -365,31 +398,66 @@ export const RegistrationModal: React.FC<RegistrationModalProps> = ({ isOpen, on
                             {selectedEvents.length} / 3 Selected
                           </span>
                         </div>
-                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                          {EVENTS.map((event) => {
-                            const isSelected = selectedEvents.includes(event.name);
-                            const isDisabled = !isSelected && selectedEvents.length >= 3;
-                            return (
-                              <label key={event.id} className={`flex items-center p-4 rounded-xl border transition-all cursor-pointer ${isSelected ? 'bg-neon-blue/10 border-neon-blue' : 'bg-white/5 border-white/10 hover:bg-white/10'
-                                } ${isDisabled ? 'opacity-40 cursor-not-allowed' : ''}`}>
-                                <input
-                                  type="checkbox"
-                                  value={event.name}
-                                  disabled={isDisabled}
-                                  {...register('events', { validate: v => v.length >= 1 && v.length <= 3 })}
-                                  className="hidden"
-                                />
-                                <div className={`w-5 h-5 rounded border flex items-center justify-center mr-3 transition-colors ${isSelected ? 'bg-neon-blue border-neon-blue' : 'border-white/20'
-                                  }`}>
-                                  {isSelected && <Check size={14} className="text-black" />}
-                                </div>
-                                <div className="flex-1">
-                                  <div className="text-sm font-bold">{event.name}</div>
-                                  <div className="text-[10px] text-white/40 uppercase tracking-tighter">{event.category}</div>
-                                </div>
-                              </label>
-                            );
-                          })}
+                        <div className="space-y-6">
+                          <div>
+                            <h4 className="text-[10px] uppercase tracking-[0.2em] text-neon-blue font-bold mb-4 opacity-60">Technical & Non-Technical Events</h4>
+                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                              {EVENTS.filter(e => e.id !== 'efootball' && e.id !== 'freefire').map((event) => {
+                                const isSelected = selectedEvents.includes(event.name);
+                                const isDisabled = !isSelected && selectedEvents.length >= 3;
+                                return (
+                                  <label key={event.id} className={`flex items-center p-4 rounded-xl border transition-all cursor-pointer ${isSelected ? 'bg-neon-blue/10 border-neon-blue' : 'bg-white/5 border-white/10 hover:bg-white/10'
+                                    } ${isDisabled ? 'opacity-40 cursor-not-allowed' : ''}`}>
+                                    <input
+                                      type="checkbox"
+                                      value={event.name}
+                                      disabled={isDisabled}
+                                      {...register('events', { validate: v => v.length >= 1 && v.length <= 3 })}
+                                      className="hidden"
+                                    />
+                                    <div className={`w-5 h-5 rounded border flex items-center justify-center mr-3 transition-colors ${isSelected ? 'bg-neon-blue border-neon-blue' : 'border-white/20'
+                                      }`}>
+                                      {isSelected && <Check size={14} className="text-black" />}
+                                    </div>
+                                    <div className="flex-1">
+                                      <div className="text-sm font-bold">{event.name}</div>
+                                      <div className="text-[10px] text-white/40 uppercase tracking-tighter">{event.category}</div>
+                                    </div>
+                                  </label>
+                                );
+                              })}
+                            </div>
+                          </div>
+
+                          <div>
+                            <h4 className="text-[10px] uppercase tracking-[0.2em] text-neon-purple font-bold mb-4 opacity-60">Online Games (Competition)</h4>
+                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                              {EVENTS.filter(e => e.id === 'efootball' || e.id === 'freefire').map((event) => {
+                                const isSelected = selectedEvents.includes(event.name);
+                                const isDisabled = !isSelected && selectedEvents.length >= 3;
+                                return (
+                                  <label key={event.id} className={`flex items-center p-4 rounded-xl border transition-all cursor-pointer ${isSelected ? 'bg-neon-purple/10 border-neon-purple shadow-[0_0_20px_rgba(188,19,254,0.1)]' : 'bg-white/5 border-white/10 hover:bg-white/10'
+                                    } ${isDisabled ? 'opacity-40 cursor-not-allowed' : ''}`}>
+                                    <input
+                                      type="checkbox"
+                                      value={event.name}
+                                      disabled={isDisabled}
+                                      {...register('events')}
+                                      className="hidden"
+                                    />
+                                    <div className={`w-5 h-5 rounded border flex items-center justify-center mr-3 transition-colors ${isSelected ? 'bg-neon-purple border-neon-purple' : 'border-white/20'
+                                      }`}>
+                                      {isSelected && <Check size={14} className="text-black" />}
+                                    </div>
+                                    <div className="flex-1">
+                                      <div className="text-sm font-bold">{event.name}</div>
+                                      <div className="text-[10px] text-white/40 uppercase tracking-tighter">Premium Online Game</div>
+                                    </div>
+                                  </label>
+                                );
+                              })}
+                            </div>
+                          </div>
                         </div>
                         {selectedEvents.length === 0 && (
                           <p className="text-red-400 text-xs mt-4">Selection of at least one event is mandatory.</p>
@@ -403,37 +471,57 @@ export const RegistrationModal: React.FC<RegistrationModalProps> = ({ isOpen, on
                         animate={{ opacity: 1, x: 0 }}
                         className="space-y-8 text-center"
                       >
-                        <h3 className="text-2xl font-bold">Payment Integration</h3>
-                        <div className="glass p-8 rounded-3xl inline-block mx-auto border-neon-blue/20">
-                          <div className="text-4xl font-bold text-white mb-2">₹200</div>
-                          <div className="text-white/40 text-sm mb-6">Registration Fee</div>
+                        <h3 className="text-2xl font-bold">Payment Details</h3>
+                        <div className="flex flex-col items-center space-y-6">
+                          {(() => {
+                            const onlineEvents = EVENTS.filter(e => selectedEvents.includes(e.name) && e.category === 'Online');
+                            const gameEvent = onlineEvents.find(e => e.details.fee);
+                            const totalFee = gameEvent ? gameEvent.details.fee : REGISTRATION_FEE;
+                            const qrSource = gameEvent && gameEvent.details.qrAsset ? gameEvent.details.qrAsset : "/assets/payment-qr.jpg";
+                            const upiId = gameEvent && gameEvent.details.upiId ? gameEvent.details.upiId : UPI_ID;
 
-                          <div className="bg-white p-4 rounded-2xl mb-6 inline-block">
-                            <img
-                              src="/assets/payment-qr.jpg"
-                              alt="Payment QR"
-                              className="w-40 h-40 object-contain"
-                            />
-                          </div>
+                            return (
+                              <div className="glass p-8 rounded-3xl inline-block mx-auto border-neon-blue/20">
+                                {gameEvent && (
+                                  <div className="px-3 py-1 bg-neon-purple/20 text-neon-purple rounded-full border border-neon-purple/30 text-[9px] font-bold uppercase tracking-widest mb-4 inline-block">
+                                    {gameEvent.name} Special Fee
+                                  </div>
+                                )}
+                                <div className="text-4xl font-bold text-white mb-2">₹{totalFee}</div>
+                                <div className="text-white/40 text-sm mb-6">Registration Fee</div>
 
-                          <div className="text-neon-blue font-mono text-sm mb-8">{UPI_ID}</div>
+                                <div className="bg-white p-4 rounded-2xl mb-6 inline-block">
+                                  <img
+                                    src={qrSource}
+                                    alt="Payment QR"
+                                    className="w-44 h-44 object-contain"
+                                  />
+                                </div>
 
-                          <div className="grid grid-cols-2 gap-3">
-                            {['Google Pay', 'PhonePe', 'Paytm', 'Other UPI'].map(app => (
-                              <button
-                                key={app}
-                                type="button"
-                                onClick={() => handleUPIPayment(app)}
-                                className="flex items-center justify-center space-x-2 p-3 bg-white/5 border border-white/10 rounded-xl hover:bg-white/10 transition-all text-xs font-medium"
-                              >
-                                <Smartphone size={14} />
-                                <span>{app}</span>
-                              </button>
-                            ))}
-                          </div>
+                                <div className="text-neon-blue font-mono text-sm mb-8">{upiId}</div>
+
+                                <div className="grid grid-cols-2 gap-3">
+                                  {['Google Pay', 'PhonePe', 'Paytm', 'Other UPI'].map(app => (
+                                    <button
+                                      key={app}
+                                      type="button"
+                                      onClick={() => {
+                                        const upiUrl = `upi://pay?pa=${upiId}&pn=SPIRIT2K26&am=${totalFee}&cu=INR`;
+                                        window.open(upiUrl, '_blank');
+                                      }}
+                                      className="flex items-center justify-center space-x-2 p-3 bg-white/5 border border-white/10 rounded-xl hover:bg-white/10 transition-all text-xs font-medium"
+                                    >
+                                      <Smartphone size={14} />
+                                      <span>{app}</span>
+                                    </button>
+                                  ))}
+                                </div>
+                              </div>
+                            );
+                          })()}
                         </div>
                         <p className="text-white/40 text-sm max-w-md mx-auto">
-                          Scan the QR or click on any UPI app to pay. After successful payment, take a screenshot and proceed to the next step.
+                          Scan the QR or click on any UPI app to pay. After successful payment, take a screenshot and proceed.
                         </p>
                       </motion.div>
                     )}

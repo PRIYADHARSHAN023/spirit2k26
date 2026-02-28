@@ -480,6 +480,11 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({ isOpen, onClose }) => {
                             {reg.regType === 'Team' && (
                               <div className="text-neon-purple font-mono text-[10px] mb-1">
                                 {reg.teamName} ({reg.teamMembers} Members)
+                                {reg.memberNames && reg.memberNames.filter(n => n.trim() !== '').length > 0 && (
+                                  <div className="mt-1 text-white/60 normal-case italic">
+                                    Members: {reg.memberNames.filter(n => n.trim() !== '').join(', ')}
+                                  </div>
+                                )}
                               </div>
                             )}
                             <div className="text-xs text-white/40">{reg.email}</div>
