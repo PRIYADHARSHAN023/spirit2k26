@@ -112,7 +112,7 @@ export const RegistrationModal: React.FC<RegistrationModalProps> = ({ isOpen, on
       ...data,
       registrationId: '', // Will be filled once server responds
       paymentStatus: 'Processing',
-      createdAt: new Date().toISOString()
+      created_at: new Date().toISOString()
     };
 
     setRegisteredData(optimisticData);
