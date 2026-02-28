@@ -17,7 +17,20 @@ export const InvitationCard: React.FC<InvitationCardProps> = ({ registration, on
   const downloadAsPNG = async () => {
     if (cardRef.current === null) return;
     try {
-      const dataUrl = await toPng(cardRef.current, { cacheBust: true, pixelRatio: 2 });
+      const node = cardRef.current;
+      const dataUrl = await toPng(node, {
+        cacheBust: true,
+        pixelRatio: 3,
+        width: node.offsetWidth,
+        height: node.offsetHeight,
+        style: {
+          transform: 'scale(1)',
+          transformOrigin: 'top left',
+          width: `${node.offsetWidth}px`,
+          height: `${node.offsetHeight}px`,
+          margin: '0'
+        }
+      });
       const link = document.createElement('a');
       link.download = `SPIRIT2k26_Invitation_${registration.registrationId}.png`;
       link.href = dataUrl;
@@ -30,7 +43,20 @@ export const InvitationCard: React.FC<InvitationCardProps> = ({ registration, on
   const downloadAsPDF = async () => {
     if (cardRef.current === null) return;
     try {
-      const dataUrl = await toPng(cardRef.current, { cacheBust: true, pixelRatio: 2 });
+      const node = cardRef.current;
+      const dataUrl = await toPng(node, {
+        cacheBust: true,
+        pixelRatio: 3,
+        width: node.offsetWidth,
+        height: node.offsetHeight,
+        style: {
+          transform: 'scale(1)',
+          transformOrigin: 'top left',
+          width: `${node.offsetWidth}px`,
+          height: `${node.offsetHeight}px`,
+          margin: '0'
+        }
+      });
       const pdf = new jsPDF('p', 'mm', 'a4');
       const imgProps = pdf.getImageProperties(dataUrl);
       const pdfWidth = pdf.internal.pageSize.getWidth();
@@ -45,7 +71,20 @@ export const InvitationCard: React.FC<InvitationCardProps> = ({ registration, on
   const shareInvitation = async () => {
     if (cardRef.current === null) return;
     try {
-      const dataUrl = await toPng(cardRef.current, { cacheBust: true, pixelRatio: 2 });
+      const node = cardRef.current;
+      const dataUrl = await toPng(node, {
+        cacheBust: true,
+        pixelRatio: 3,
+        width: node.offsetWidth,
+        height: node.offsetHeight,
+        style: {
+          transform: 'scale(1)',
+          transformOrigin: 'top left',
+          width: `${node.offsetWidth}px`,
+          height: `${node.offsetHeight}px`,
+          margin: '0'
+        }
+      });
       const blob = await (await fetch(dataUrl)).blob();
       const file = new File([blob], `SPIRIT2k26_Invitation.png`, { type: 'image/png' });
 

@@ -116,21 +116,37 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({ isOpen, onClose }) => {
     }
   };
 
-  const deleteRegistration = async (id: number) => {
-    if (!confirm('Are you sure you want to delete this entry? This ID will NOT be recycled.')) return;
-    try {
-      const response = await fetch(`/api/admin/registrations/${id}`, {
-        method: 'DELETE',
-      });
-      if (response.ok) {
-        fetchRegistrations();
+  const handleDelete = async (id: string, name: string) => {
+    if (window.confirm(`Are you sure you want to remove ${name} from your list?`)) {
+      try {
+        const token = localStorage.getItem('adminToken');
+        const role = localStorage.getItem('adminRole');
+        const response = await fetch(`/api/admin/registrations/${id}?role=${role}`, {
+          method: 'DELETE',
+          headers: {
+            'Authorization': `Bearer ${token}`
+          }
+        });
+
+        if (response.ok) {
+          setRegistrations(registrations.filter(r => {
+            // Optimistic update: If role is not ALL, remove the event from local state first
+            if (role && role !== 'ALL') {
+              r.events = r.events.filter(e => e !== role);
+              if (r.events.length === 0) return false;
+              return true;
+            }
+            return false;
+          }));
+        } else {
+          alert('Failed to delete registration');
+        }
+      } catch (err) {
+        console.error(err);
+        alert('An error occurred');
       }
-    } catch (error) {
-      console.error(error);
     }
   };
-
-
   const exportToExcel = () => {
     const data = filteredRegistrations.map(r => ({
       'Reg ID': r.registrationId,
@@ -531,11 +547,11 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({ isOpen, onClose }) => {
                                 <FileText size={18} />
                               </button>
                               <button
-                                onClick={() => deleteRegistration(reg.id!)}
-                                className="p-2 text-white/20 hover:text-red-400 hover:bg-red-400/10 rounded-xl transition-all"
-                                title="Delete Participant"
+                                onClick={() => handleDelete(reg._id as string, reg.name)}
+                                className="w-8 h-8 rounded-full bg-red-500/10 text-red-400 flex items-center justify-center hover:bg-red-500 hover:text-white transition-colors"
+                                title={role === 'ALL' ? "Delete Registration" : "Remove from my event"}
                               >
-                                <Trash2 size={18} />
+                                <Trash2 size={16} />
                               </button>
                             </div>
                           </td>

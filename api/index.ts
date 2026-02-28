@@ -52,7 +52,7 @@ const registrationSchema = new mongoose.Schema({
     year: { type: String, required: true },
     gender: { type: String, required: true },
     phone: { type: String, required: true },
-    email: { type: String, required: true, unique: true },
+    email: { type: String, required: true }, // Removed unique: true to allow online games repetition
     events: [String],
     paymentStatus: { type: String, default: 'Pending' },
     paymentScreenshot: String,
@@ -103,8 +103,22 @@ app.post("/api/register", async (req: Request, res: Response) => {
         await connectToDatabase();
         const { regType, teamName, teamMembers, memberNames, name, college, department, year, gender, phone, email, events, paymentScreenshot } = req.body;
 
-        const existing = await Registration.findOne({ email });
-        if (existing) return res.status(400).json({ error: "Email already registered" });
+        const isOnlineGame = events.includes('E-Football (PES)') || events.includes('Free Fire');
+
+        if (!isOnlineGame) {
+            // Symposium Events: Check if email already exists for ANY symposium event
+            const existingSymp = await Registration.findOne({
+                email,
+                events: { $not: { $elemMatch: { $in: ['E-Football (PES)', 'Free Fire'] } } }
+            });
+            if (existingSymp) return res.status(400).json({ error: "Email already registered for Symposium Events" });
+        } else {
+            // Online Games: Check if the exact event is already registered by this email
+            for (const ev of events) {
+                const existingGame = await Registration.findOne({ email, events: ev });
+                if (existingGame) return res.status(400).json({ error: `Email already registered for ${ev}` });
+            }
+        }
 
         let counter = await Counter.findOneAndUpdate(
             { id: "registrationId" },
@@ -210,10 +224,29 @@ app.delete("/api/admin/registrations/:id", async (req: Request, res: Response) =
     try {
         await connectToDatabase();
         const { id } = req.params;
-        await (Registration as any).findByIdAndDelete(id);
+        const { role } = req.query;
+
+        console.log(`Deleting from registration ${id} with role ${role}`);
+
+        if (role && role !== "ALL") {
+            // Remove just that specific event from the array
+            const registration = await (Registration as any).findById(id);
+            if (registration) {
+                registration.events = registration.events.filter((e: string) => e !== role);
+                if (registration.events.length === 0) {
+                    await (Registration as any).findByIdAndDelete(id);
+                } else {
+                    await registration.save();
+                }
+            }
+        } else {
+            // Super admin deletes the whole document
+            await (Registration as any).findByIdAndDelete(id);
+        }
         res.json({ success: true });
     } catch (error) {
-        res.status(500).json({ error: "Failed to delete registration" });
+        console.error("Delete error", error);
+        res.status(500).json({ error: "Failed to delete" });
     }
 });
 

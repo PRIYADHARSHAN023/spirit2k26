@@ -14,11 +14,11 @@ interface RegistrationModalProps {
 }
 
 const STEPS = [
+  { id: 'domain', title: 'Event Domain' },
   { id: 'type', title: 'Registration Type' },
   { id: 'details', title: 'Personal Details' },
   { id: 'events', title: 'Event Selection' },
-  { id: 'payment', title: 'Payment' },
-  { id: 'upload', title: 'Verification' }
+  { id: 'payment', title: 'Payment' }
 ];
 
 const REGISTRATION_FEE = 200;
@@ -62,10 +62,10 @@ export const RegistrationModal: React.FC<RegistrationModalProps> = ({ isOpen, on
   const [screenshotPreview, setScreenshotPreview] = useState<string | null>(null);
   const [registeredData, setRegisteredData] = useState<Registration | null>(null);
   const [showInvitation, setShowInvitation] = useState(false);
-  const [hasVisitedGoogleForm, setHasVisitedGoogleForm] = useState(false);
+  const [eventDomain, setEventDomain] = useState<'Symposium' | 'Online Games' | null>(null);
 
-  const GOOGLE_FORM_LINK = "https://forms.gle/y19jcUDRXBzYqNot5";
-  const WHATSAPP_GROUP_LINK = "https://chat.whatsapp.com/CCY2fmTVixxELmvQtiDGSq";
+  const GOOGLE_FORM_TEAM = "https://forms.gle/r46hhPYg2wK3sVMR7";
+  const GOOGLE_FORM_INDIVIDUAL = "https://forms.gle/QSTMTSJWZdiKUJYHA";
 
   const regType = watch('regType');
   const selectedEvents = watch('events');
@@ -73,25 +73,32 @@ export const RegistrationModal: React.FC<RegistrationModalProps> = ({ isOpen, on
   const nextStep = async () => {
     let fieldsToValidate: any[] = [];
     if (currentStep === 0) {
-      fieldsToValidate = ['regType'];
+      if (!eventDomain) {
+        alert('Please select an event domain');
+        return;
+      }
+      return setCurrentStep(currentStep + 1);
     } else if (currentStep === 1) {
+      fieldsToValidate = ['regType'];
+    } else if (currentStep === 2) {
       fieldsToValidate = ['name', 'college', 'department', 'year', 'gender', 'phone', 'email'];
       if (regType === 'Team') {
         fieldsToValidate.push('teamName', 'teamMembers');
       }
-    } else if (currentStep === 2) {
+    } else if (currentStep === 3) {
       fieldsToValidate = ['events'];
       if (selectedEvents.length === 0) {
         alert('Please select at least one event');
         return;
       }
-      if (selectedEvents.length > 3) {
+      if (eventDomain === 'Online Games' && selectedEvents.length > 1) {
+        alert('You can only select 1 Online Game at a time.');
+        return;
+      }
+      if (eventDomain === 'Symposium' && selectedEvents.length > 3) {
         alert('Maximum 3 events allowed');
         return;
       }
-    } else if (currentStep === 3) {
-      setCurrentStep(currentStep + 1);
-      return;
     }
 
     const isValid = await trigger(fieldsToValidate);
@@ -190,13 +197,13 @@ export const RegistrationModal: React.FC<RegistrationModalProps> = ({ isOpen, on
 
                 <div className="flex flex-col sm:flex-row gap-4 w-full max-w-md">
                   <a
-                    href={WHATSAPP_GROUP_LINK}
+                    href={regType === 'Team' ? GOOGLE_FORM_TEAM : GOOGLE_FORM_INDIVIDUAL}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="flex-1 flex items-center justify-center space-x-2 py-4 bg-emerald-500 text-white rounded-2xl hover:bg-emerald-600 transition-all font-bold"
+                    className="flex-1 flex items-center justify-center space-x-2 py-4 bg-emerald-500 text-white rounded-2xl hover:bg-emerald-600 transition-all font-bold group"
                   >
-                    <MessageCircle size={20} />
-                    <span>Join WhatsApp Group</span>
+                    <Upload size={20} className="group-hover:-translate-y-1 transition-transform" />
+                    <span>Submit Payment Proof</span>
                   </a>
                   <button
                     onClick={() => setShowInvitation(true)}
@@ -206,6 +213,9 @@ export const RegistrationModal: React.FC<RegistrationModalProps> = ({ isOpen, on
                     <span>Get Your Invitation</span>
                   </button>
                 </div>
+                <p className="mt-4 text-xs text-white/40 max-w-md">
+                  Click 'Submit Payment Proof' to upload your payment screenshot. You'll join the WhatsApp group after submission!
+                </p>
 
                 <button
                   onClick={onClose}
@@ -241,6 +251,42 @@ export const RegistrationModal: React.FC<RegistrationModalProps> = ({ isOpen, on
                 <div className="flex-1 overflow-y-auto p-8 custom-scrollbar">
                   <form onSubmit={handleSubmit(onSubmit)} className="max-w-2xl mx-auto">
                     {currentStep === 0 && (
+                      <motion.div
+                        initial={{ opacity: 0, x: 20 }}
+                        animate={{ opacity: 1, x: 0 }}
+                        className="space-y-8"
+                      >
+                        <div className="text-center mb-10">
+                          <h3 className="text-3xl font-bold mb-2">Choose Your Path</h3>
+                          <p className="text-white/40 uppercase tracking-widest text-[10px] font-bold">Select the domain of events</p>
+                        </div>
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                          <label onClick={() => setEventDomain('Symposium')} className={`relative group cursor-pointer p-8 rounded-3xl border-2 transition-all duration-500 overflow-hidden ${eventDomain === 'Symposium' ? 'bg-neon-blue/10 border-neon-blue shadow-[0_0_30px_rgba(0,242,255,0.15)]' : 'bg-white/5 border-white/10 hover:border-white/20'}`}>
+                            <div className="relative z-10 flex flex-col items-center text-center">
+                              <div className={`p-4 rounded-2xl mb-6 transition-all duration-500 ${eventDomain === 'Symposium' ? 'bg-neon-blue text-black' : 'bg-white/10 text-white'}`}>
+                                <FileText size={24} />
+                              </div>
+                              <h4 className="text-xl font-bold mb-2">Symposium Events</h4>
+                              <p className="text-xs text-white/40 leading-relaxed uppercase tracking-wider font-medium">Technical & Non-Technical</p>
+                            </div>
+                            {eventDomain === 'Symposium' && <motion.div layoutId="glowDomain" className="absolute inset-0 bg-neon-blue/5 blur-3xl rounded-full" />}
+                          </label>
+
+                          <label onClick={() => setEventDomain('Online Games')} className={`relative group cursor-pointer p-8 rounded-3xl border-2 transition-all duration-500 overflow-hidden ${eventDomain === 'Online Games' ? 'bg-neon-purple/10 border-neon-purple shadow-[0_0_30px_rgba(188,19,254,0.15)]' : 'bg-white/5 border-white/10 hover:border-white/20'}`}>
+                            <div className="relative z-10 flex flex-col items-center text-center">
+                              <div className={`p-4 rounded-2xl mb-6 transition-all duration-500 ${eventDomain === 'Online Games' ? 'bg-neon-purple text-black' : 'bg-white/10 text-white'}`}>
+                                <Cpu size={24} />
+                              </div>
+                              <h4 className="text-xl font-bold mb-2">Online Games</h4>
+                              <p className="text-xs text-white/40 leading-relaxed uppercase tracking-wider font-medium">Premium E-Sports</p>
+                            </div>
+                            {eventDomain === 'Online Games' && <motion.div layoutId="glowDomain" className="absolute inset-0 bg-neon-purple/5 blur-3xl rounded-full" />}
+                          </label>
+                        </div>
+                      </motion.div>
+                    )}
+
+                    {currentStep === 1 && (
                       <motion.div
                         initial={{ opacity: 0, x: 20 }}
                         animate={{ opacity: 1, x: 0 }}
@@ -283,7 +329,7 @@ export const RegistrationModal: React.FC<RegistrationModalProps> = ({ isOpen, on
                       </motion.div>
                     )}
 
-                    {currentStep === 1 && (
+                    {currentStep === 2 && (
                       <motion.div
                         initial={{ opacity: 0, x: 20 }}
                         animate={{ opacity: 1, x: 0 }}
@@ -386,7 +432,7 @@ export const RegistrationModal: React.FC<RegistrationModalProps> = ({ isOpen, on
                       </motion.div>
                     )}
 
-                    {currentStep === 2 && (
+                    {currentStep === 3 && (
                       <motion.div
                         initial={{ opacity: 0, x: 20 }}
                         animate={{ opacity: 1, x: 0 }}
@@ -399,65 +445,69 @@ export const RegistrationModal: React.FC<RegistrationModalProps> = ({ isOpen, on
                           </span>
                         </div>
                         <div className="space-y-6">
-                          <div>
-                            <h4 className="text-[10px] uppercase tracking-[0.2em] text-neon-blue font-bold mb-4 opacity-60">Technical & Non-Technical Events</h4>
-                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                              {EVENTS.filter(e => e.id !== 'efootball' && e.id !== 'freefire').map((event) => {
-                                const isSelected = selectedEvents.includes(event.name);
-                                const isDisabled = !isSelected && selectedEvents.length >= 3;
-                                return (
-                                  <label key={event.id} className={`flex items-center p-4 rounded-xl border transition-all cursor-pointer ${isSelected ? 'bg-neon-blue/10 border-neon-blue' : 'bg-white/5 border-white/10 hover:bg-white/10'
-                                    } ${isDisabled ? 'opacity-40 cursor-not-allowed' : ''}`}>
-                                    <input
-                                      type="checkbox"
-                                      value={event.name}
-                                      disabled={isDisabled}
-                                      {...register('events', { validate: v => v.length >= 1 && v.length <= 3 })}
-                                      className="hidden"
-                                    />
-                                    <div className={`w-5 h-5 rounded border flex items-center justify-center mr-3 transition-colors ${isSelected ? 'bg-neon-blue border-neon-blue' : 'border-white/20'
-                                      }`}>
-                                      {isSelected && <Check size={14} className="text-black" />}
-                                    </div>
-                                    <div className="flex-1">
-                                      <div className="text-sm font-bold">{event.name}</div>
-                                      <div className="text-[10px] text-white/40 uppercase tracking-tighter">{event.category}</div>
-                                    </div>
-                                  </label>
-                                );
-                              })}
+                          {eventDomain === 'Symposium' && (
+                            <div>
+                              <h4 className="text-[10px] uppercase tracking-[0.2em] text-neon-blue font-bold mb-4 opacity-60">Technical & Non-Technical Events</h4>
+                              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                                {EVENTS.filter(e => e.id !== 'efootball' && e.id !== 'freefire').map((event) => {
+                                  const isSelected = selectedEvents.includes(event.name);
+                                  const isDisabled = !isSelected && selectedEvents.length >= 3;
+                                  return (
+                                    <label key={event.id} className={`flex items-center p-4 rounded-xl border transition-all cursor-pointer ${isSelected ? 'bg-neon-blue/10 border-neon-blue' : 'bg-white/5 border-white/10 hover:bg-white/10'
+                                      } ${isDisabled ? 'opacity-40 cursor-not-allowed' : ''}`}>
+                                      <input
+                                        type="checkbox"
+                                        value={event.name}
+                                        disabled={isDisabled}
+                                        {...register('events', { validate: v => v.length >= 1 && v.length <= 3 })}
+                                        className="hidden"
+                                      />
+                                      <div className={`w-5 h-5 rounded border flex items-center justify-center mr-3 transition-colors ${isSelected ? 'bg-neon-blue border-neon-blue' : 'border-white/20'
+                                        }`}>
+                                        {isSelected && <Check size={14} className="text-black" />}
+                                      </div>
+                                      <div className="flex-1">
+                                        <div className="text-sm font-bold">{event.name}</div>
+                                        <div className="text-[10px] text-white/40 uppercase tracking-tighter">{event.category}</div>
+                                      </div>
+                                    </label>
+                                  );
+                                })}
+                              </div>
                             </div>
-                          </div>
+                          )}
 
-                          <div>
-                            <h4 className="text-[10px] uppercase tracking-[0.2em] text-neon-purple font-bold mb-4 opacity-60">Online Games (Competition)</h4>
-                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                              {EVENTS.filter(e => e.id === 'efootball' || e.id === 'freefire').map((event) => {
-                                const isSelected = selectedEvents.includes(event.name);
-                                const isDisabled = !isSelected && selectedEvents.length >= 3;
-                                return (
-                                  <label key={event.id} className={`flex items-center p-4 rounded-xl border transition-all cursor-pointer ${isSelected ? 'bg-neon-purple/10 border-neon-purple shadow-[0_0_20px_rgba(188,19,254,0.1)]' : 'bg-white/5 border-white/10 hover:bg-white/10'
-                                    } ${isDisabled ? 'opacity-40 cursor-not-allowed' : ''}`}>
-                                    <input
-                                      type="checkbox"
-                                      value={event.name}
-                                      disabled={isDisabled}
-                                      {...register('events')}
-                                      className="hidden"
-                                    />
-                                    <div className={`w-5 h-5 rounded border flex items-center justify-center mr-3 transition-colors ${isSelected ? 'bg-neon-purple border-neon-purple' : 'border-white/20'
-                                      }`}>
-                                      {isSelected && <Check size={14} className="text-black" />}
-                                    </div>
-                                    <div className="flex-1">
-                                      <div className="text-sm font-bold">{event.name}</div>
-                                      <div className="text-[10px] text-white/40 uppercase tracking-tighter">Premium Online Game</div>
-                                    </div>
-                                  </label>
-                                );
-                              })}
+                          {eventDomain === 'Online Games' && (
+                            <div>
+                              <h4 className="text-[10px] uppercase tracking-[0.2em] text-neon-purple font-bold mb-4 opacity-60">Online Games (Competition)</h4>
+                              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                                {EVENTS.filter(e => e.id === 'efootball' || e.id === 'freefire').map((event) => {
+                                  const isSelected = selectedEvents.includes(event.name);
+                                  const isDisabled = !isSelected && selectedEvents.length >= 3;
+                                  return (
+                                    <label key={event.id} className={`flex items-center p-4 rounded-xl border transition-all cursor-pointer ${isSelected ? 'bg-neon-purple/10 border-neon-purple shadow-[0_0_20px_rgba(188,19,254,0.1)]' : 'bg-white/5 border-white/10 hover:bg-white/10'
+                                      } ${isDisabled ? 'opacity-40 cursor-not-allowed' : ''}`}>
+                                      <input
+                                        type="checkbox"
+                                        value={event.name}
+                                        disabled={isDisabled}
+                                        {...register('events')}
+                                        className="hidden"
+                                      />
+                                      <div className={`w-5 h-5 rounded border flex items-center justify-center mr-3 transition-colors ${isSelected ? 'bg-neon-purple border-neon-purple' : 'border-white/20'
+                                        }`}>
+                                        {isSelected && <Check size={14} className="text-black" />}
+                                      </div>
+                                      <div className="flex-1">
+                                        <div className="text-sm font-bold">{event.name}</div>
+                                        <div className="text-[10px] text-white/40 uppercase tracking-tighter">Premium Online Game</div>
+                                      </div>
+                                    </label>
+                                  );
+                                })}
+                              </div>
                             </div>
-                          </div>
+                          )}
                         </div>
                         {selectedEvents.length === 0 && (
                           <p className="text-red-400 text-xs mt-4">Selection of at least one event is mandatory.</p>
@@ -465,7 +515,7 @@ export const RegistrationModal: React.FC<RegistrationModalProps> = ({ isOpen, on
                       </motion.div>
                     )}
 
-                    {currentStep === 3 && (
+                    {currentStep === 4 && (
                       <motion.div
                         initial={{ opacity: 0, x: 20 }}
                         animate={{ opacity: 1, x: 0 }}
@@ -520,48 +570,9 @@ export const RegistrationModal: React.FC<RegistrationModalProps> = ({ isOpen, on
                             );
                           })()}
                         </div>
-                        <p className="text-white/40 text-sm max-w-md mx-auto">
-                          Scan the QR or click on any UPI app to pay. After successful payment, take a screenshot and proceed.
+                        <p className="text-white/40 text-sm max-w-md mx-auto mt-6">
+                          Scan the QR or click on any UPI app to pay. Once payment is successful and completed, click the button below to generate your invitation.
                         </p>
-                      </motion.div>
-                    )}
-
-                    {currentStep === 4 && (
-                      <motion.div
-                        initial={{ opacity: 0, x: 20 }}
-                        animate={{ opacity: 1, x: 0 }}
-                        className="space-y-6 text-center"
-                      >
-                        <div className="w-20 h-20 bg-neon-blue/20 rounded-full flex items-center justify-center mx-auto mb-6">
-                          <Upload className="text-neon-blue" size={32} />
-                        </div>
-                        <h3 className="text-2xl font-bold">Submit Your Payment</h3>
-
-                        <div className="max-w-md mx-auto space-y-4">
-                          <p className="text-white/60 text-sm">
-                            Please upload your payment screenshot to our official verification form.
-                            This is required to confirm your registration.
-                          </p>
-
-                          <a
-                            href={GOOGLE_FORM_LINK}
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            onClick={() => setHasVisitedGoogleForm(true)}
-                            className="flex items-center justify-center space-x-3 w-full py-4 bg-white/5 border border-white/20 rounded-2xl hover:bg-white/10 hover:border-neon-blue transition-all group"
-                          >
-                            <FileText className="text-neon-blue group-hover:scale-110 transition-transform" size={20} />
-                            <span className="font-bold">Open Payment Form</span>
-                            <ArrowRight size={16} className="text-white/40" />
-                          </a>
-
-                          <div className="p-4 bg-neon-blue/5 border border-neon-blue/20 rounded-2xl">
-                            <p className="text-[10px] text-neon-blue uppercase tracking-widest font-bold">Important</p>
-                            <p className="text-xs text-white/40 mt-1">
-                              After submitting the Google Form, come back here and click "Complete Registration" to get your invitation card.
-                            </p>
-                          </div>
-                        </div>
                       </motion.div>
                     )}
 
@@ -589,8 +600,8 @@ export const RegistrationModal: React.FC<RegistrationModalProps> = ({ isOpen, on
                       ) : (
                         <button
                           type="submit"
-                          disabled={isSubmitting || !hasVisitedGoogleForm}
-                          className="btn-primary disabled:opacity-50 disabled:cursor-not-allowed flex items-center space-x-2"
+                          disabled={isSubmitting}
+                          className="btn-primary flex items-center space-x-2"
                         >
                           {isSubmitting ? (
                             <>
@@ -599,7 +610,7 @@ export const RegistrationModal: React.FC<RegistrationModalProps> = ({ isOpen, on
                             </>
                           ) : (
                             <>
-                              <span>Complete Registration</span>
+                              <span>I have paid, Generate Invitation</span>
                               <Check size={18} />
                             </>
                           )}
