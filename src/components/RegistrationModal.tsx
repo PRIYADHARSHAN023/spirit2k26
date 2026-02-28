@@ -563,14 +563,22 @@ export const RegistrationModal: React.FC<RegistrationModalProps> = ({ isOpen, on
                                       key={app}
                                       type="button"
                                       onClick={() => {
-                                        // Omitting 'pn=' (Payee Name) since strict merchant policies on personal accounts cause failure
-                                        const upiUrl = `upi://pay?pa=${upiId}&am=${totalFee}&cu=INR`;
-                                        window.open(upiUrl, '_blank');
+                                        // Copy to clipboard to avoid deep-link risk blocks
+                                        navigator.clipboard.writeText(upiId).then(() => {
+                                          alert(`UPI ID copied: ${upiId}\n\n1. Opening ${app}.\n2. Please paste the ID in the search/pay bar.\n3. Pay ₹${totalFee}`);
+
+                                          if (app === 'Google Pay') window.open('tez://', '_blank');
+                                          else if (app === 'PhonePe') window.open('phonepe://', '_blank');
+                                          else if (app === 'Paytm') window.open('paytmmp://', '_blank');
+                                          else window.open('upi://', '_blank');
+                                        }).catch(() => {
+                                          alert("Failed to copy UPI ID automatically. Please copy it manually.");
+                                        });
                                       }}
                                       className="flex items-center justify-center space-x-2 p-3 bg-white/5 border border-white/10 rounded-xl hover:bg-white/10 transition-all text-[11px] font-medium"
                                     >
                                       <Smartphone size={14} />
-                                      <span>Open {app}</span>
+                                      <span>Copy ID & Open {app}</span>
                                     </button>
                                   ))}
                                 </div>
