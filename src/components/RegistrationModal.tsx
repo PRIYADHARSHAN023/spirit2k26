@@ -62,10 +62,12 @@ export const RegistrationModal: React.FC<RegistrationModalProps> = ({ isOpen, on
   const [screenshotPreview, setScreenshotPreview] = useState<string | null>(null);
   const [registeredData, setRegisteredData] = useState<Registration | null>(null);
   const [showInvitation, setShowInvitation] = useState(false);
+  const [hasVisitedGoogleForm, setHasVisitedGoogleForm] = useState(false);
   const [eventDomain, setEventDomain] = useState<'Symposium' | 'Online Games' | null>(null);
 
   const GOOGLE_FORM_TEAM = "https://forms.gle/r46hhPYg2wK3sVMR7";
   const GOOGLE_FORM_INDIVIDUAL = "https://forms.gle/QSTMTSJWZdiKUJYHA";
+  const WHATSAPP_GROUP_LINK = "https://chat.whatsapp.com/CCY2fmTVixxELmvQtiDGSq";
 
   const regType = watch('regType');
   const selectedEvents = watch('events');
@@ -197,13 +199,13 @@ export const RegistrationModal: React.FC<RegistrationModalProps> = ({ isOpen, on
 
                 <div className="flex flex-col sm:flex-row gap-4 w-full max-w-md">
                   <a
-                    href={regType === 'Team' ? GOOGLE_FORM_TEAM : GOOGLE_FORM_INDIVIDUAL}
+                    href={WHATSAPP_GROUP_LINK}
                     target="_blank"
                     rel="noopener noreferrer"
                     className="flex-1 flex items-center justify-center space-x-2 py-4 bg-emerald-500 text-white rounded-2xl hover:bg-emerald-600 transition-all font-bold group"
                   >
-                    <Upload size={20} className="group-hover:-translate-y-1 transition-transform" />
-                    <span>Submit Payment Proof</span>
+                    <MessageCircle size={20} className="group-hover:-translate-y-1 transition-transform" />
+                    <span>Join WhatsApp Group</span>
                   </a>
                   <button
                     onClick={() => setShowInvitation(true)}
@@ -214,7 +216,7 @@ export const RegistrationModal: React.FC<RegistrationModalProps> = ({ isOpen, on
                   </button>
                 </div>
                 <p className="mt-4 text-xs text-white/40 max-w-md">
-                  Click 'Submit Payment Proof' to upload your payment screenshot. You'll join the WhatsApp group after submission!
+                  Join the WhatsApp group for the latest event updates!
                 </p>
 
                 <button
@@ -488,10 +490,11 @@ export const RegistrationModal: React.FC<RegistrationModalProps> = ({ isOpen, on
                                     <label key={event.id} className={`flex items-center p-4 rounded-xl border transition-all cursor-pointer ${isSelected ? 'bg-neon-purple/10 border-neon-purple shadow-[0_0_20px_rgba(188,19,254,0.1)]' : 'bg-white/5 border-white/10 hover:bg-white/10'
                                       } ${isDisabled ? 'opacity-40 cursor-not-allowed' : ''}`}>
                                       <input
-                                        type="checkbox"
+                                        type="radio"
+                                        name="online-game-selection"
                                         value={event.name}
-                                        disabled={isDisabled}
-                                        {...register('events')}
+                                        checked={isSelected}
+                                        onChange={() => setValue('events', [event.name], { shouldValidate: true })}
                                         className="hidden"
                                       />
                                       <div className={`w-5 h-5 rounded border flex items-center justify-center mr-3 transition-colors ${isSelected ? 'bg-neon-purple border-neon-purple' : 'border-white/20'
@@ -521,8 +524,8 @@ export const RegistrationModal: React.FC<RegistrationModalProps> = ({ isOpen, on
                         animate={{ opacity: 1, x: 0 }}
                         className="space-y-8 text-center"
                       >
-                        <h3 className="text-2xl font-bold">Payment Details</h3>
-                        <div className="flex flex-col items-center space-y-6">
+                        <h3 className="text-2xl font-bold">Payment & Verification</h3>
+                        <div className="flex flex-col items-center space-y-4">
                           {(() => {
                             const onlineEvents = EVENTS.filter(e => selectedEvents.includes(e.name) && e.category === 'Online');
                             const gameEvent = onlineEvents.find(e => e.details.fee);
@@ -531,26 +534,28 @@ export const RegistrationModal: React.FC<RegistrationModalProps> = ({ isOpen, on
                             const upiId = gameEvent && gameEvent.details.upiId ? gameEvent.details.upiId : UPI_ID;
 
                             return (
-                              <div className="glass p-8 rounded-3xl inline-block mx-auto border-neon-blue/20">
+                              <div className="glass p-6 rounded-3xl w-full max-w-sm mx-auto border-neon-blue/20">
                                 {gameEvent && (
                                   <div className="px-3 py-1 bg-neon-purple/20 text-neon-purple rounded-full border border-neon-purple/30 text-[9px] font-bold uppercase tracking-widest mb-4 inline-block">
                                     {gameEvent.name} Special Fee
                                   </div>
                                 )}
                                 <div className="text-4xl font-bold text-white mb-2">₹{totalFee}</div>
-                                <div className="text-white/40 text-sm mb-6">Registration Fee</div>
+                                <div className="text-white/40 text-sm mb-4">Registration Fee</div>
 
-                                <div className="bg-white p-4 rounded-2xl mb-6 inline-block">
+                                <div className="bg-white p-4 rounded-2xl mb-4 inline-block">
                                   <img
                                     src={qrSource}
                                     alt="Payment QR"
-                                    className="w-44 h-44 object-contain"
+                                    className="w-36 h-36 object-contain"
                                   />
                                 </div>
+                                <div className="text-neon-blue font-mono text-sm mb-4">{upiId}</div>
+                                <p className="text-white/80 text-sm font-bold uppercase tracking-wider mb-6 bg-neon-blue/10 py-2 px-4 rounded-xl border border-neon-blue/20">
+                                  Make a payment and get screenshot
+                                </p>
 
-                                <div className="text-neon-blue font-mono text-sm mb-8">{upiId}</div>
-
-                                <div className="grid grid-cols-2 gap-3">
+                                <div className="grid grid-cols-2 gap-2 mb-6">
                                   {['Google Pay', 'PhonePe', 'Paytm', 'Other UPI'].map(app => (
                                     <button
                                       key={app}
@@ -559,20 +564,34 @@ export const RegistrationModal: React.FC<RegistrationModalProps> = ({ isOpen, on
                                         const upiUrl = `upi://pay?pa=${upiId}&pn=SPIRIT2K26&am=${totalFee}&cu=INR`;
                                         window.open(upiUrl, '_blank');
                                       }}
-                                      className="flex items-center justify-center space-x-2 p-3 bg-white/5 border border-white/10 rounded-xl hover:bg-white/10 transition-all text-xs font-medium"
+                                      className="flex items-center justify-center space-x-2 p-2 bg-white/5 border border-white/10 rounded-xl hover:bg-white/10 transition-all text-[10px] font-medium"
                                     >
-                                      <Smartphone size={14} />
+                                      <Smartphone size={12} />
                                       <span>{app}</span>
                                     </button>
                                   ))}
+                                </div>
+
+                                <div className="border-t border-white/10 pt-6">
+                                  <p className="text-[10px] text-white/40 uppercase tracking-widest mb-3">Step 2: Upload Proof</p>
+                                  <a
+                                    href={regType === 'Team' ? GOOGLE_FORM_TEAM : GOOGLE_FORM_INDIVIDUAL}
+                                    target="_blank"
+                                    rel="noopener noreferrer"
+                                    onClick={() => setHasVisitedGoogleForm(true)}
+                                    className="flex items-center justify-center space-x-2 w-full py-3 bg-neon-blue/10 border border-neon-blue/40 rounded-xl hover:bg-neon-blue hover:text-black transition-all group font-bold text-sm"
+                                  >
+                                    <Upload size={16} className="group-hover:-translate-y-1 transition-transform" />
+                                    <span>Submit Payment Form</span>
+                                  </a>
+                                  <p className="mt-3 text-[10px] text-white/40">
+                                    Clicking the button above confirms you have the screenshot ready.
+                                  </p>
                                 </div>
                               </div>
                             );
                           })()}
                         </div>
-                        <p className="text-white/40 text-sm max-w-md mx-auto mt-6">
-                          Scan the QR or click on any UPI app to pay. Once payment is successful and completed, click the button below to generate your invitation.
-                        </p>
                       </motion.div>
                     )}
 
@@ -600,8 +619,8 @@ export const RegistrationModal: React.FC<RegistrationModalProps> = ({ isOpen, on
                       ) : (
                         <button
                           type="submit"
-                          disabled={isSubmitting}
-                          className="btn-primary flex items-center space-x-2"
+                          disabled={isSubmitting || !hasVisitedGoogleForm}
+                          className="btn-primary disabled:opacity-50 disabled:cursor-not-allowed flex items-center space-x-2"
                         >
                           {isSubmitting ? (
                             <>
@@ -610,7 +629,7 @@ export const RegistrationModal: React.FC<RegistrationModalProps> = ({ isOpen, on
                             </>
                           ) : (
                             <>
-                              <span>I have paid, Generate Invitation</span>
+                              <span>I have submitted proof, Generate Invitation</span>
                               <Check size={18} />
                             </>
                           )}
