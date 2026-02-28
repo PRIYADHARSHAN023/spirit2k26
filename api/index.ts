@@ -5,7 +5,7 @@ import dotenv from 'dotenv';
 dotenv.config();
 
 // MongoDB Connection
-const MONGODB_URI = process.env.MONGODB_URI || "mongodb+srv://spirit2k26:spirit2k26%40official2026@cluster0.gsqe29q.mongodb.net/?appName=Cluster0";
+const MONGODB_URI = (process.env.MONGODB_URI || "mongodb+srv://spirit2k26:spirit2k26%40official2026@cluster0.gsqe29q.mongodb.net/?appName=Cluster0").trim();
 
 // Connection management for Serverless - Global Cache
 let cached: any = (global as any).mongoose;
@@ -41,6 +41,9 @@ const schemaOptions = { bufferCommands: true };
 
 const registrationSchema = new mongoose.Schema({
     registrationId: { type: String, unique: true },
+    regType: { type: String, required: true, default: 'Individual' },
+    teamName: { type: String },
+    teamMembers: { type: String },
     name: { type: String, required: true },
     college: { type: String, required: true },
     department: { type: String, required: true },
@@ -123,7 +126,8 @@ app.post("/api/admin/login", async (req: Request, res: Response) => {
         }
 
         // Handler check: [EventName]@2026 / [EventName]@2026
-        if (username.endsWith("@2026") && username === password) {
+        const lowerUser = username.toLowerCase();
+        if (lowerUser.endsWith("@2026") && username === password) {
             const eventName = username.split("@")[0];
             return res.json({ success: true, token: "handler-token", role: eventName });
         }

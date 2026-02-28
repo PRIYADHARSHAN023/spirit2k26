@@ -1,6 +1,6 @@
 import React, { useState, useRef } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
-import { X, Check, CreditCard, Upload, Smartphone, ArrowRight, ArrowLeft, MessageCircle, FileText } from 'lucide-react';
+import { X, Check, CreditCard, Upload, Smartphone, ArrowRight, ArrowLeft, MessageCircle, FileText, Cpu } from 'lucide-react';
 import { useForm } from 'react-hook-form';
 import { EVENTS, Registration } from '../types';
 import confetti from 'canvas-confetti';
@@ -14,6 +14,7 @@ interface RegistrationModalProps {
 }
 
 const STEPS = [
+  { id: 'type', title: 'Registration Type' },
   { id: 'details', title: 'Personal Details' },
   { id: 'events', title: 'Event Selection' },
   { id: 'payment', title: 'Payment' },
@@ -26,6 +27,9 @@ const UPI_ID = "prakashpriya43739@okhdfcbank";
 export const RegistrationModal: React.FC<RegistrationModalProps> = ({ isOpen, onClose, initialEvent }) => {
   const { register, handleSubmit, watch, setValue, trigger, formState: { errors } } = useForm({
     defaultValues: {
+      regType: 'Individual',
+      teamName: '',
+      teamMembers: '1',
       name: '',
       college: '',
       department: '',
@@ -62,19 +66,29 @@ export const RegistrationModal: React.FC<RegistrationModalProps> = ({ isOpen, on
   const GOOGLE_FORM_LINK = "https://forms.gle/GAVCvgYcmMJ3BvSq5";
   const WHATSAPP_GROUP_LINK = "https://chat.whatsapp.com/CCY2fmTVixxELmvQtiDGSq";
 
+  const regType = watch('regType');
   const selectedEvents = watch('events');
 
   const nextStep = async () => {
     let fieldsToValidate: any[] = [];
     if (currentStep === 0) {
-      fieldsToValidate = ['name', 'college', 'department', 'year', 'gender', 'phone', 'email'];
+      fieldsToValidate = ['regType'];
     } else if (currentStep === 1) {
-      fieldsToValidate = ['events'];
-      if (selectedEvents.length < 3) {
-        alert('Please select at least 3 events');
-        return;
+      fieldsToValidate = ['name', 'college', 'department', 'year', 'gender', 'phone', 'email'];
+      if (regType === 'Team') {
+        fieldsToValidate.push('teamName', 'teamMembers');
       }
     } else if (currentStep === 2) {
+      fieldsToValidate = ['events'];
+      if (selectedEvents.length === 0) {
+        alert('Please select at least one event');
+        return;
+      }
+      if (selectedEvents.length > 3) {
+        alert('Maximum 3 events allowed');
+        return;
+      }
+    } else if (currentStep === 3) {
       setCurrentStep(currentStep + 1);
       return;
     }
@@ -229,46 +243,41 @@ export const RegistrationModal: React.FC<RegistrationModalProps> = ({ isOpen, on
                       <motion.div
                         initial={{ opacity: 0, x: 20 }}
                         animate={{ opacity: 1, x: 0 }}
-                        className="space-y-6"
+                        className="space-y-8"
                       >
-                        <h3 className="text-2xl font-bold mb-6">Personal Details</h3>
+                        <div className="text-center mb-10">
+                          <h3 className="text-3xl font-bold mb-2">Join the Future</h3>
+                          <p className="text-white/40 uppercase tracking-widest text-[10px] font-bold">Select Your Participation Mode</p>
+                        </div>
+
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                          <div className="space-y-2">
-                            <label className="text-sm text-white/60">Full Name</label>
-                            <input {...register('name', { required: true })} className="w-full glass-input" placeholder="John Doe" />
-                          </div>
-                          <div className="space-y-2">
-                            <label className="text-sm text-white/60">College Name</label>
-                            <input {...register('college', { required: true })} className="w-full glass-input" placeholder="XYZ College" />
-                          </div>
-                          <div className="space-y-2">
-                            <label className="text-sm text-white/60">Department</label>
-                            <input {...register('department', { required: true })} className="w-full glass-input" placeholder="Information Technology" />
-                          </div>
-                          <div className="space-y-2">
-                            <label className="text-sm text-white/60">Year of Study</label>
-                            <input
-                              {...register('year', { required: true })}
-                              className="w-full glass-input"
-                              placeholder="e.g. 1st Year or 2026"
-                            />
-                          </div>
-                          <div className="space-y-2">
-                            <label className="text-sm text-white/60">Gender</label>
-                            <select {...register('gender', { required: true })} className="w-full glass-input">
-                              <option value="Male">Male</option>
-                              <option value="Female">Female</option>
-                              <option value="Other">Other</option>
-                            </select>
-                          </div>
-                          <div className="space-y-2">
-                            <label className="text-sm text-white/60">Phone Number</label>
-                            <input {...register('phone', { required: true, pattern: /^[0-9]{10}$/ })} className="w-full glass-input" placeholder="9876543210" />
-                          </div>
-                          <div className="space-y-2 md:col-span-2">
-                            <label className="text-sm text-white/60">Email ID</label>
-                            <input {...register('email', { required: true, pattern: /^\S+@\S+$/i })} className="w-full glass-input" placeholder="john@example.com" />
-                          </div>
+                          <label className={`relative group cursor-pointer p-8 rounded-3xl border-2 transition-all duration-500 overflow-hidden ${regType === 'Individual' ? 'bg-neon-blue/10 border-neon-blue shadow-[0_0_30px_rgba(0,242,255,0.15)]' : 'bg-white/5 border-white/10 hover:border-white/20'}`}>
+                            <input type="radio" {...register('regType')} value="Individual" className="hidden" />
+                            <div className="relative z-10 flex flex-col items-center text-center">
+                              <div className={`p-4 rounded-2xl mb-6 transition-all duration-500 ${regType === 'Individual' ? 'bg-neon-blue text-black' : 'bg-white/10 text-white'}`}>
+                                <Check size={24} />
+                              </div>
+                              <h4 className="text-xl font-bold mb-2">Individual</h4>
+                              <p className="text-xs text-white/40 leading-relaxed uppercase tracking-wider font-medium">Standard entry for single participants</p>
+                            </div>
+                            {regType === 'Individual' && (
+                              <motion.div layoutId="glow" className="absolute inset-0 bg-neon-blue/5 blur-3xl rounded-full" />
+                            )}
+                          </label>
+
+                          <label className={`relative group cursor-pointer p-8 rounded-3xl border-2 transition-all duration-500 overflow-hidden ${regType === 'Team' ? 'bg-neon-purple/10 border-neon-purple shadow-[0_0_30px_rgba(188,19,254,0.15)]' : 'bg-white/5 border-white/10 hover:border-white/20'}`}>
+                            <input type="radio" {...register('regType')} value="Team" className="hidden" />
+                            <div className="relative z-10 flex flex-col items-center text-center">
+                              <div className={`p-4 rounded-2xl mb-6 transition-all duration-500 ${regType === 'Team' ? 'bg-neon-purple text-black' : 'bg-white/10 text-white'}`}>
+                                <Cpu size={24} />
+                              </div>
+                              <h4 className="text-xl font-bold mb-2">Team Participation</h4>
+                              <p className="text-xs text-white/40 leading-relaxed uppercase tracking-wider font-medium">Collaborate with your squad (Max 4)</p>
+                            </div>
+                            {regType === 'Team' && (
+                              <motion.div layoutId="glow" className="absolute inset-0 bg-neon-purple/5 blur-3xl rounded-full" />
+                            )}
+                          </label>
                         </div>
                       </motion.div>
                     )}
@@ -279,16 +288,87 @@ export const RegistrationModal: React.FC<RegistrationModalProps> = ({ isOpen, on
                         animate={{ opacity: 1, x: 0 }}
                         className="space-y-6"
                       >
+                        <div className="flex justify-between items-center mb-6">
+                          <h3 className="text-2xl font-bold">{regType === 'Team' ? 'Squad Information' : 'Personal Details'}</h3>
+                          <div className="px-3 py-1 bg-white/5 rounded-full border border-white/10 text-[10px] uppercase tracking-widest text-neon-blue font-bold">
+                            {regType} Account
+                          </div>
+                        </div>
+
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                          {regType === 'Team' && (
+                            <>
+                              <div className="space-y-2 md:col-span-1">
+                                <label className="text-sm font-bold text-white/60 uppercase tracking-widest text-[9px]">Team / Squad Name</label>
+                                <input {...register('teamName', { required: regType === 'Team' })} className="w-full glass-input" placeholder="Cyber Warriors" />
+                              </div>
+                              <div className="space-y-2 md:col-span-1">
+                                <label className="text-sm font-bold text-white/60 uppercase tracking-widest text-[9px]">Team Members (1-4)</label>
+                                <select {...register('teamMembers', { required: regType === 'Team' })} className="w-full glass-input">
+                                  <option value="1">1 Member</option>
+                                  <option value="2">2 Members</option>
+                                  <option value="3">3 Members</option>
+                                  <option value="4">4 Members</option>
+                                </select>
+                              </div>
+                            </>
+                          )}
+                          <div className="space-y-2">
+                            <label className="text-sm font-bold text-white/60 uppercase tracking-widest text-[9px]">Full Name {regType === 'Team' && '(Lead)'}</label>
+                            <input {...register('name', { required: true })} className="w-full glass-input" placeholder="John Doe" />
+                          </div>
+                          <div className="space-y-2">
+                            <label className="text-sm font-bold text-white/60 uppercase tracking-widest text-[9px]">College Name</label>
+                            <input {...register('college', { required: true })} className="w-full glass-input" placeholder="XYZ College" />
+                          </div>
+                          <div className="space-y-2">
+                            <label className="text-sm font-bold text-white/60 uppercase tracking-widest text-[9px]">Department</label>
+                            <input {...register('department', { required: true })} className="w-full glass-input" placeholder="Information Technology" />
+                          </div>
+                          <div className="space-y-2">
+                            <label className="text-sm font-bold text-white/60 uppercase tracking-widest text-[9px]">Year of Study</label>
+                            <input
+                              {...register('year', { required: true })}
+                              className="w-full glass-input"
+                              placeholder="e.g. 1st Year or 2026"
+                            />
+                          </div>
+                          <div className="space-y-2">
+                            <label className="text-sm font-bold text-white/60 uppercase tracking-widest text-[9px]">Gender</label>
+                            <select {...register('gender', { required: true })} className="w-full glass-input">
+                              <option value="Male">Male</option>
+                              <option value="Female">Female</option>
+                              <option value="Other">Other</option>
+                            </select>
+                          </div>
+                          <div className="space-y-2">
+                            <label className="text-sm font-bold text-white/60 uppercase tracking-widest text-[9px]">Phone Number</label>
+                            <input {...register('phone', { required: true, pattern: /^[0-9]{10}$/ })} className="w-full glass-input" placeholder="9876543210" />
+                          </div>
+                          <div className="space-y-2 md:col-span-2">
+                            <label className="text-sm font-bold text-white/60 uppercase tracking-widest text-[9px]">Email ID</label>
+                            <input {...register('email', { required: true, pattern: /^\S+@\S+$/i })} className="w-full glass-input" placeholder="john@example.com" />
+                          </div>
+                        </div>
+                      </motion.div>
+                    )}
+
+                    {currentStep === 2 && (
+                      <motion.div
+                        initial={{ opacity: 0, x: 20 }}
+                        animate={{ opacity: 1, x: 0 }}
+                        className="space-y-6"
+                      >
                         <div className="flex justify-between items-end mb-6">
                           <h3 className="text-2xl font-bold">Select Events</h3>
-                          <span className={`text-sm font-mono ${selectedEvents.length >= 3 && selectedEvents.length <= 4 ? 'text-neon-blue' : 'text-red-400'}`}>
-                            {selectedEvents.length} / 4 Selected
+                          <span className={`text-sm font-mono ${selectedEvents.length > 0 && selectedEvents.length <= 3 ? 'text-neon-blue' : 'text-red-400'}`}>
+                            {selectedEvents.length} / 3 Selected
                           </span>
                         </div>
                         <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                           {EVENTS.map((event) => {
                             const isSelected = selectedEvents.includes(event.name);
-                            const isDisabled = !isSelected && selectedEvents.length >= 4;
+                            const isDisabled = !isSelected && selectedEvents.length >= 3;
                             return (
                               <label key={event.id} className={`flex items-center p-4 rounded-xl border transition-all cursor-pointer ${isSelected ? 'bg-neon-blue/10 border-neon-blue' : 'bg-white/5 border-white/10 hover:bg-white/10'
                                 } ${isDisabled ? 'opacity-40 cursor-not-allowed' : ''}`}>
@@ -296,7 +376,7 @@ export const RegistrationModal: React.FC<RegistrationModalProps> = ({ isOpen, on
                                   type="checkbox"
                                   value={event.name}
                                   disabled={isDisabled}
-                                  {...register('events', { validate: v => v.length >= 3 && v.length <= 4 })}
+                                  {...register('events', { validate: v => v.length >= 1 && v.length <= 3 })}
                                   className="hidden"
                                 />
                                 <div className={`w-5 h-5 rounded border flex items-center justify-center mr-3 transition-colors ${isSelected ? 'bg-neon-blue border-neon-blue' : 'border-white/20'
@@ -311,13 +391,13 @@ export const RegistrationModal: React.FC<RegistrationModalProps> = ({ isOpen, on
                             );
                           })}
                         </div>
-                        {selectedEvents.length < 3 && (
-                          <p className="text-red-400 text-xs mt-4">Minimum 3 events mandatory for registration.</p>
+                        {selectedEvents.length === 0 && (
+                          <p className="text-red-400 text-xs mt-4">Selection of at least one event is mandatory.</p>
                         )}
                       </motion.div>
                     )}
 
-                    {currentStep === 2 && (
+                    {currentStep === 3 && (
                       <motion.div
                         initial={{ opacity: 0, x: 20 }}
                         animate={{ opacity: 1, x: 0 }}
@@ -358,7 +438,7 @@ export const RegistrationModal: React.FC<RegistrationModalProps> = ({ isOpen, on
                       </motion.div>
                     )}
 
-                    {currentStep === 3 && (
+                    {currentStep === 4 && (
                       <motion.div
                         initial={{ opacity: 0, x: 20 }}
                         animate={{ opacity: 1, x: 0 }}

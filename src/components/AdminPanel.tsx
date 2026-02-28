@@ -471,7 +471,17 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({ isOpen, onClose }) => {
                             <div className="font-mono text-neon-blue font-bold text-xs">{reg.registrationId}</div>
                           </td>
                           <td className="px-6 py-4">
-                            <div className="font-bold text-sm">{reg.name}</div>
+                            <div className="flex items-center space-x-2 mb-1">
+                              <div className="font-bold text-sm">{reg.name}</div>
+                              {reg.regType === 'Team' && (
+                                <span className="text-[9px] px-2 py-0.5 bg-neon-purple/20 text-neon-purple border border-neon-purple/30 rounded-full font-bold uppercase tracking-widest leading-none">Team</span>
+                              )}
+                            </div>
+                            {reg.regType === 'Team' && (
+                              <div className="text-neon-purple font-mono text-[10px] mb-1">
+                                {reg.teamName} ({reg.teamMembers} Members)
+                              </div>
+                            )}
                             <div className="text-xs text-white/40">{reg.email}</div>
                             <div className="text-[10px] text-white/20 font-mono">{reg.phone}</div>
                           </td>

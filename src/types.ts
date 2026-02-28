@@ -39,9 +39,11 @@ export const EVENTS: Event[] = [
       rules: [
         'PPT format only',
         'Maximum 10 slides',
-        'Project must be shortlisted',
-        'Time: 5–7 minutes',
-        'Judges decision final'
+        'Problem Statement: Open Problem Statement (Any theme allowed)',
+        'Selection: Submit -> Review -> Status Update (Call Selected/Refund Not Selected)',
+        'Last Date: 05/03/2026',
+        'Shortlist Date: 06/03/2026',
+        'Time: 5–7 minutes'
       ],
       timing: 'Full Day'
     }
@@ -235,9 +237,12 @@ export const EVENTS: Event[] = [
       date: '08/03/2026',
       type: 'Online',
       rules: [
-        'no rules full freedom for a creativity and its open theme you can participate with any theme but not allowed for already prize winning short films and dont use any copyright songs',
-        'use any cameras',
-        'try to avoid already award winning short films'
+        'Duration: Maximum 30 mins',
+        'Last Date for Submission: 08/03/2026',
+        'Theme: Open Choice',
+        'Use any cameras',
+        'Avoid already award winning short films',
+        'Dont use any copyright songs'
       ]
     }
   },
@@ -259,6 +264,9 @@ export const EVENTS: Event[] = [
 export interface Registration {
   id?: number;
   registrationId?: string;
+  regType: 'Individual' | 'Team';
+  teamName?: string;
+  teamMembers?: string;
   name: string;
   college: string;
   department: string;
@@ -267,7 +275,7 @@ export interface Registration {
   phone: string;
   email: string;
   events: string[];
-  paymentStatus: 'Pending' | 'Completed';
+  paymentStatus: 'Pending' | 'Completed' | 'Processing';
   paymentScreenshot: string; // base64
   created_at?: string;
 }

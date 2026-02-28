@@ -1,7 +1,7 @@
 import React, { useRef } from 'react';
 import { motion } from 'motion/react';
 import { QRCodeSVG } from 'qrcode.react';
-import { Download, X, FileText, Image as ImageIcon } from 'lucide-react';
+import { Download, X, FileText, Image as ImageIcon, Share2 } from 'lucide-react';
 import { toPng } from 'html-to-image';
 import { jsPDF } from 'jspdf';
 import { Registration } from '../types';
@@ -39,6 +39,30 @@ export const InvitationCard: React.FC<InvitationCardProps> = ({ registration, on
       pdf.save(`SPIRIT2k26_Invitation_${registration.registrationId}.pdf`);
     } catch (err) {
       console.error('Failed to download PDF', err);
+    }
+  };
+
+  const shareInvitation = async () => {
+    if (cardRef.current === null) return;
+    try {
+      const dataUrl = await toPng(cardRef.current, { cacheBust: true, pixelRatio: 2 });
+      const blob = await (await fetch(dataUrl)).blob();
+      const file = new File([blob], `SPIRIT2k26_Invitation.png`, { type: 'image/png' });
+
+      if (navigator.share) {
+        await navigator.share({
+          title: 'SPIRIT 2k26 Invitation',
+          text: `Hey! I just registered for SPIRIT 2k26. Join me there!`,
+          files: [file]
+        });
+      } else {
+        await downloadAsPNG();
+      }
+    } catch (err) {
+      console.error('Failed to share', err);
+      if (err instanceof Error && err.name !== 'AbortError') {
+        await downloadAsPNG();
+      }
     }
   };
 
@@ -135,7 +159,7 @@ export const InvitationCard: React.FC<InvitationCardProps> = ({ registration, on
           </div>
 
           {/* Event Details Footer */}
-          <div className="bg-white/5 rounded-2xl p-4 border border-white/5 flex items-center justify-between mb-8">
+          <div className="bg-white/5 rounded-2xl p-4 border border-white/5 flex items-center justify-between mb-6">
             <div className="space-y-1">
               <div className="flex items-center space-x-2">
                 <div className="w-1.5 h-1.5 rounded-full bg-neon-blue animate-pulse" />
@@ -143,7 +167,7 @@ export const InvitationCard: React.FC<InvitationCardProps> = ({ registration, on
               </div>
               <div className="text-[9px] text-white/40 uppercase tracking-wider">Main Auditorium, JJCET</div>
             </div>
-            <div className="bg-white p-1 rounded-lg w-16 h-16 flex items-center justify-center overflow-hidden">
+            <div className="bg-white p-1 rounded-xl w-24 h-24 flex items-center justify-center overflow-hidden shadow-[0_0_15px_rgba(255,255,255,0.1)]">
               <img
                 src="/assets/college-qr.jpg"
                 alt="College Address"
@@ -159,21 +183,28 @@ export const InvitationCard: React.FC<InvitationCardProps> = ({ registration, on
           </div>
         </div>
 
-        {/* Download Buttons */}
-        <div className="mt-8 flex space-x-4 w-full">
+        {/* Download & Share Buttons */}
+        <div className="mt-8 grid grid-cols-3 gap-3 w-full">
           <button
             onClick={downloadAsPNG}
-            className="flex-1 flex items-center justify-center space-x-2 py-4 bg-white/5 border border-white/10 rounded-2xl hover:bg-white/10 transition-all text-white/80 font-bold"
+            className="flex flex-col items-center justify-center p-3 bg-white/5 border border-white/10 rounded-2xl hover:bg-white/10 transition-all text-white/80"
           >
-            <ImageIcon size={18} />
-            <span>PNG</span>
+            <ImageIcon size={20} className="mb-1" />
+            <span className="text-[10px] font-bold uppercase tracking-wider">PNG</span>
           </button>
           <button
             onClick={downloadAsPDF}
-            className="flex-1 flex items-center justify-center space-x-2 py-4 bg-neon-blue text-black rounded-2xl hover:shadow-[0_0_20px_rgba(0,242,255,0.4)] transition-all font-bold"
+            className="flex flex-col items-center justify-center p-3 bg-white/5 border border-white/10 rounded-2xl hover:bg-white/10 transition-all text-white/80"
           >
-            <FileText size={18} />
-            <span>PDF</span>
+            <FileText size={20} className="mb-1" />
+            <span className="text-[10px] font-bold uppercase tracking-wider">PDF</span>
+          </button>
+          <button
+            onClick={shareInvitation}
+            className="flex flex-col items-center justify-center p-3 bg-neon-blue text-black rounded-2xl hover:shadow-[0_0_20px_rgba(0,242,255,0.4)] transition-all"
+          >
+            <Share2 size={20} className="mb-1" />
+            <span className="text-[10px] font-bold uppercase tracking-wider">Share</span>
           </button>
         </div>
       </motion.div>
